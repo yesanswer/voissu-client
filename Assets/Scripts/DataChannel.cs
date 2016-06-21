@@ -44,7 +44,7 @@ public class DataChannel : MonoBehaviour
 	public void send_message(string ip, DataPacket dp)
 	{
 		byte[] buf = dp.buf;
-		channel.BeginSend (buf, buf.Length, ip, GLOBAL.PORT, send_complete, null);
+		channel.BeginSend (buf, buf.Length, ip, 10001, send_complete, null);
 	}
 
 	private void send_complete(IAsyncResult ar)

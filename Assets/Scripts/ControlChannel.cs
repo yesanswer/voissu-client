@@ -61,7 +61,7 @@ public class ControlChannel : MonoBehaviour
 	private IEnumerator connect_coroutine(string ip, async_callback callback)
 	{
 		Debug.Log ("connect coroutine start");
-		channel.BeginConnect ("127.0.0.1", 10000, null, null);
+		channel.BeginConnect (GLOBAL.SERVER_IP, GLOBAL.PORT, null, null);
 
 		for (int i = 0; i < 10; i++) 
 		{
