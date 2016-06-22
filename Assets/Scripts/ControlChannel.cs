@@ -76,7 +76,7 @@ public class ControlChannel : MonoBehaviour
 			// tcp connect timeout
 			channel.Close ();
 			callback (false);
-			return false;
+			yield break;
 		}
 
 		the_stream = channel.GetStream ();

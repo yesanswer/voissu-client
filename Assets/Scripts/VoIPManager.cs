@@ -90,7 +90,7 @@ public class VoIPManager : MonoBehaviour {
 		string private_ip = get_private_ip ();
 		if (private_ip == null) {
 			Debug.Log ("get private ip faild");
-			return false;
+			yield break;
 		}
 		obj.Add ("type", PROTOCOL.REQUEST_TYPE_ENTER_CHANNEL);
 		obj.Add ("guid", guid);
@@ -111,7 +111,7 @@ public class VoIPManager : MonoBehaviour {
 
 		if (status != VOIP_STATUS.ENTERRING2) {
 			Debug.Log ("enter channel timeout");
-			return false;
+			yield break;
 		}
 
 		foreach (Peer peer in peer_list) 
