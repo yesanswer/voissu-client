@@ -55,7 +55,7 @@ public class VoIPManager : MonoBehaviour {
 	public void connect_async(string appid, string uid, async_callback callback)
 	{
 		this.appid = appid;
-		this.uid = uid;
+		this.uid = string.Format("{0,-36}", uid);
 		this.guid = null;
 		status = VOIP_STATUS.CONNECTING;
 		control_channel = ControlChannel.Instance;
@@ -204,7 +204,7 @@ public class VoIPManager : MonoBehaviour {
 			dp = data_channel.receive_message ();
 			if (dp == null)
 				break;
-			Debug.Log ("receive udp message ");
+			Debug.Log ("receive udp message: ");
 			if (dp.type == 1) {
 				byte[] data = dp.data;
 				Debug.Log (Encoding.UTF8.GetString (data));
