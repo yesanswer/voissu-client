@@ -109,7 +109,7 @@ public class DataPacket
 		get 
 		{
 			byte[] ret = new byte[buf.Length - 44];
-			Buffer.BlockCopy (buf, 0, ret, 0, buf.Length - 44);
+			Buffer.BlockCopy (buf, 44, ret, 0, buf.Length - 44);
 			return ret;
 		}
 	}

@@ -3,12 +3,12 @@ using System.Collections;
 using System.Net.Sockets;
 using System.Net;
 using System.Timers;
+using System.Text;
 
 public enum CONNECTION_STATUS
 {
 	UNDEFINED,
-	CONNECTING1,
-	CONNECTING2,
+	CONNECTING,
 	CONNECTED,
 	FAIL
 }
@@ -33,6 +33,23 @@ public class Peer
 		connection_status = CONNECTION_STATUS.UNDEFINED;
 	}
 
+	public IEnumerator p2p_connect(DataChannel data_channel)
+	{
+		DataPacket dp = new DataPacket (uid, 1, 1, Encoding.UTF8.GetBytes("Hello world!!"));
+
+		for (int i = 0; i < 3; i++) 
+		{
+			data_channel.send_message (private_ip, private_port, dp);
+			yield return new WaitForSeconds (0.5f);
+		}
+
+		for (int i = 0; i < 3; i++) 
+		{
+			data_channel.send_message (public_ip, public_port, dp);
+			yield return new WaitForSeconds (0.5f);
+		}
+
+	}
 
 
 }

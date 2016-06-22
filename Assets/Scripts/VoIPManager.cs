@@ -117,26 +117,7 @@ public class VoIPManager : MonoBehaviour {
 		foreach (Peer peer in peer_list) 
 		{
 			Debug.Log("<peer> private ip: " + peer.private_ip + " public ip: " + peer.public_ip + " public port: " + peer.public_port );
-		}
-
-		dp = new DataPacket (uid, 1, 1, Encoding.UTF8.GetBytes("Hello world!!"));
-
-		for (int i = 0; i < 3; i++) 
-		{
-			foreach (Peer peer in peer_list) 
-			{
-				data_channel.send_message (peer.private_ip, peer.private_port, dp);
-			}
-			yield return new WaitForSeconds (0.5f);
-		}
-
-		for (int i = 0; i < 3; i++) 
-		{
-			foreach(Peer peer in peer_list)
-			{
-				data_channel.send_message (peer.public_ip, peer.public_port, dp);
-			}
-			yield return new WaitForSeconds (0.5f);
+			yield return StartCoroutine (peer.p2p_connect (data_channel));
 		}
 
 
@@ -187,6 +168,20 @@ public class VoIPManager : MonoBehaviour {
 
 			status = VOIP_STATUS.ENTERRING2;
 			break;
+		case PROTOCOL.RESPONSE_TYPE_OTHER_USER_JOIN_CHANNEL:
+			{
+				Debug.Log ("other user join channel");
+				string private_ip = obj.GetString ("private_udp_address");
+				JSONObject public_address = obj.GetObject ("public_udp_address");
+				string public_ip = public_address.GetString ("ip");
+				int public_port = (int)public_address.GetNumber ("port");
+
+				Peer peer = new Peer (uid, public_ip, public_port, private_ip, GLOBAL.DATA_PORT);
+				peer_list.Add (peer);
+				StartCoroutine (peer.p2p_connect (data_channel));
+
+			}
+			break;
 		default:
 			Debug.Log ("Undefined protocol: " + type);	
 			break;
@@ -207,7 +202,9 @@ public class VoIPManager : MonoBehaviour {
 			Debug.Log ("receive udp message: ");
 			if (dp.type == 1) {
 				byte[] data = dp.data;
-				Debug.Log (Encoding.UTF8.GetString (data));
+				string str = string.Format ("{0} {1} {2} {3}", dp.id, dp.type, dp.seq, Encoding.UTF8.GetString (data));
+				Debug.Log (str);
+
 			}
 		}
 	}
