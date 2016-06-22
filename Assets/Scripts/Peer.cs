@@ -37,18 +37,17 @@ public class Peer
 	{
 		DataPacket dp = new DataPacket (uid, 1, 1, Encoding.UTF8.GetBytes("Hello world!!"));
 
-		for (int i = 0; i < 3; i++) 
-		{
-			data_channel.send_message (private_ip, private_port, dp);
-			yield return new WaitForSeconds (0.5f);
-		}
-
-		for (int i = 0; i < 3; i++) 
+		for (int i = 0; i < 10; i++) 
 		{
 			data_channel.send_message (public_ip, public_port, dp);
-			yield return new WaitForSeconds (0.5f);
+			yield return new WaitForSeconds (0.3f);
 		}
 
+		for (int i = 0; i < 10; i++) 
+		{
+			data_channel.send_message (private_ip, private_port, dp);
+			yield return new WaitForSeconds (0.3f);
+		}
 	}
 
 

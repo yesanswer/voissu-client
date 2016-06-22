@@ -4,6 +4,9 @@ using System.Collections.Generic;
 using System.Net;
 using Boomlagoon.JSON;
 using System.Text;
+using System;
+
+
 public enum VOIP_STATUS
 {
 	CONNECTING,
@@ -12,14 +15,13 @@ public enum VOIP_STATUS
 	ENTERRING2,
 	ENTERED
 }
-public delegate void async_callback(bool result);
 
-public class VoIPManager : MonoBehaviour {
+public class VoIPManager : MonoBehaviour
+{
 
 	ControlChannel control_channel;
 	DataChannel data_channel;
 
-	private string appid;
 	private string guid;
 	private string uid;
 	private ArrayList peer_list;
@@ -29,16 +31,15 @@ public class VoIPManager : MonoBehaviour {
 	private static VoIPManager instance;
 	private static GameObject container;
 
-	private async_callback user_connect_callback;
+	Action<bool> user_connect_callback;
 
-	public static VoIPManager Instance 
-	{  
+	public static VoIPManager Instance {  
 		get {
 			if (!instance) {  
 				container = new GameObject ();  
 				container.name = "VoIPManager";  
 				instance = container.AddComponent (typeof(VoIPManager)) as VoIPManager;  
-				DontDestroyOnLoad(container);
+				DontDestroyOnLoad (container);
 				Application.runInBackground = true;
 			}
 
@@ -46,44 +47,43 @@ public class VoIPManager : MonoBehaviour {
 		}
 	}
 
-	private void Awake() {
+
+	private void Awake ()
+	{
 		this.peer_list = new ArrayList ();
 		user_connect_callback = null;
 	}
 
 
-	public void connect_async(string appid, string uid, async_callback callback)
+	public void connect_async (string appid, string uid, Action<bool> callback)
 	{
-		this.appid = appid;
-		this.uid = string.Format("{0,-36}", uid);
+		this.uid = string.Format ("{0,-36}", uid);
 		this.guid = null;
 		status = VOIP_STATUS.CONNECTING;
-		control_channel = ControlChannel.Instance;
-		data_channel = DataChannel.Instance;
+		control_channel = new ControlChannel ();
+		data_channel = new DataChannel ();
 
 		user_connect_callback = callback;
-		control_channel.connect_async (connect_callback);
+		control_channel.connect_async ((result) => {
+			Debug.Log ("tcp connected");
+			if (result) {
+				JSONObject obj = new JSONObject ();
+				obj.Add ("app_id", appid);
+				obj.Add ("uid", uid);
+				control_channel.send_message (obj);
+			} else {
+				callback (false);
+			}
+		});
 	}
 
-	private void connect_callback(bool result)
-	{
-		Debug.Log ("tcp connected");
-		if (result) {
-			JSONObject obj = new JSONObject ();
-			obj.Add ("app_id", appid);
-			obj.Add ("uid", uid);
-			control_channel.send_message (obj);
-		} else
-			user_connect_callback (false);
-	} 
-
-	public void enter_channel_async(string channel_id)
+	public void enter_channel_async (string channel_id)
 	{
 		Debug.Log ("enter_channel_async call");
 		StartCoroutine (enter_channel_coroutine (channel_id));
 	}
 
-	private IEnumerator enter_channel_coroutine(string channel_id)
+	private IEnumerator enter_channel_coroutine (string channel_id)
 	{
 		DataPacket dp = null;
 		JSONObject obj = new JSONObject ();
@@ -100,8 +100,7 @@ public class VoIPManager : MonoBehaviour {
 		control_channel.send_message (obj);
 		status = VOIP_STATUS.ENTERRING1;
 
-		for (int i = 0; i < 3; i++)
-		{
+		for (int i = 0; i < 3; i++) {
 			dp = new DataPacket (guid, 0, 0, new byte[0]);
 			data_channel.send_message (GLOBAL.SERVER_IP, GLOBAL.DATA_PORT, dp);
 			yield return new WaitForSeconds (0.5f);
@@ -114,42 +113,41 @@ public class VoIPManager : MonoBehaviour {
 			yield break;
 		}
 
-		foreach (Peer peer in peer_list) 
-		{
-			Debug.Log("<peer> private ip: " + peer.private_ip + " public ip: " + peer.public_ip + " public port: " + peer.public_port );
+		foreach (Peer peer in peer_list) {
+			Debug.Log ("<peer> private ip: " + peer.private_ip + " public ip: " + peer.public_ip + " public port: " + peer.public_port);
 			yield return StartCoroutine (peer.p2p_connect (data_channel));
 		}
-
-
 	}
 
 	/// <summary>
 	/// Gets the private ip on success, null on fail
 	/// </summary>
-	private string get_private_ip()
+	private string get_private_ip ()
 	{
 		Debug.Log (Dns.GetHostName ());
 		IPAddress[] address = Dns.GetHostAddresses (Dns.GetHostName ());
-		if (address.Length > 0)
+		if (address.Length > 0) {
 			return address [address.Length - 1].ToString ();
-		else
+		} else {
 			return null;
+		}
 	}
 
-	private void execute_packet(JSONObject obj)
+	private void execute_packet (JSONObject obj)
 	{
+		Debug.Log ("execute_packet");
+
 		int type = (int)obj.GetNumber ("type");
-		switch (type) 
-		{
+		switch (type) {
 		case PROTOCOL.RESPONSE_TYPE_SIGN_IN:
 			bool success = obj.GetBoolean ("success");
 			if (success) {
 				guid = obj.GetString ("guid");
 				status = VOIP_STATUS.CONNECTED;
 				user_connect_callback (true);
-			}
-			else
+			} else {
 				user_connect_callback (false);
+			}
 			break;
 		case PROTOCOL.RESPONSE_TYPE_NEW_USER_JOIN_CHANNEL:
 			Debug.Log ("response new user recv");
@@ -187,15 +185,16 @@ public class VoIPManager : MonoBehaviour {
 			break;
 		}
 	}
-	void Update () {
+
+	void Update ()
+	{
 		JSONObject obj = control_channel.receive_message ();
 		if (obj != null) {
 			Debug.Log ("recv packet: " + obj.ToString ());
 			execute_packet (obj);
 		}
 		DataPacket dp = null;
-		while (true) 
-		{
+		while (true) {
 			dp = data_channel.receive_message ();
 			if (dp == null)
 				break;

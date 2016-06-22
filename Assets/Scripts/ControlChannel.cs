@@ -6,7 +6,8 @@ using System.Net.Sockets;
 using System;
 using System.IO;
 using System.Text;
-public class ControlChannel : MonoBehaviour
+
+public class ControlChannel
 {
 
 	private TcpClient channel;
@@ -19,12 +20,9 @@ public class ControlChannel : MonoBehaviour
 
 	private bool ready;
 
-	private static ControlChannel instance;
-	private static GameObject container;
 
-	private ControlChannel()
+	public ControlChannel ()
 	{
-		Debug.Log ("instancing");
 		channel = new TcpClient ();
 		message_buffer = new StringBuilder (10000);
 		tmp_buffer = new char[4096];
@@ -32,47 +30,23 @@ public class ControlChannel : MonoBehaviour
 		ready = false;
 	}
 
-	public static ControlChannel Instance 
-	{  
-		get {
-			if (!instance) {  
-				container = new GameObject ();  
-				container.name = "ControlChannel";  
-				instance = container.AddComponent (typeof(ControlChannel)) as ControlChannel;  
-				DontDestroyOnLoad(container);
-				Application.runInBackground = true;
-			}
-
-			return instance;  
-		}
-	}
-
-
-	/// <summary>
-	/// connect to control channel async
-	/// </summary>
-	/// <param name="callback"> called on connected or timeout. parameter is connection true/false </param>
-	public void connect_async(async_callback callback)
+	public void connect_async (Action<bool> callback)
 	{
 		Debug.Log ("connect async call");
-		StartCoroutine (connect_coroutine (GLOBAL.SERVER_IP, callback));
+		VoIPManager.Instance.StartCoroutine (connect_coroutine (GLOBAL.SERVER_IP, callback));
 	}
 
-	private IEnumerator connect_coroutine(string ip, async_callback callback)
+	private IEnumerator connect_coroutine (string ip, Action<bool> callback)
 	{
 		Debug.Log ("connect coroutine start");
 		channel.BeginConnect (GLOBAL.SERVER_IP, GLOBAL.CONTROL_PORT, null, null);
 
-		for (int i = 0; i < 10; i++) 
-		{
+		for (int i = 0; i < 10 && !channel.Connected; i++) {
 			// check tcp connection with 0.5 seconds interval
 			yield return new WaitForSeconds (0.5f);
-			if(channel.Connected == true) 
-				break;
 		}
 
-		if (channel.Connected == false) 
-		{
+		if (channel.Connected == false) {
 			// tcp connect timeout
 			channel.Close ();
 			callback (false);
@@ -87,46 +61,38 @@ public class ControlChannel : MonoBehaviour
 		callback (true);
 	}
 
-	void Update()
+	public JSONObject receive_message ()
 	{
-	//	Debug.Log ("ready" + ready + "data" + the_stream.DataAvailable);
-		if (ready && the_stream.DataAvailable)
-		{
+		if (ready && the_stream.DataAvailable) {
 			int len = the_reader.Read (tmp_buffer, 0, tmp_buffer.Length);
-			if (len > 0)
+			if (len > 0) {
 				message_buffer.Append (tmp_buffer, 0, len);
+			}
 
 			int index = -1;
-			while (true) 
-			{
+			while (true) {
 				String str = message_buffer.ToString ();
 				index = str.IndexOf ('\n');
-				if (index == -1)
+				if (index == -1) {
 					break;
+				}
 
 				String line = str.Substring (0, index);
 				message_queue.Enqueue (JSONObject.Parse (line));
 				message_buffer = new StringBuilder (str.Substring (index + 1));
 			}
-
 		}
-	}
 
-	public JSONObject receive_message()
-	{
 		if (message_queue.Count == 0)
 			return null;
 		else
 			return message_queue.Dequeue () as JSONObject;
 	}
 
-	public void send_message(JSONObject obj)
+	public void send_message (JSONObject obj)
 	{
-		if (obj is JSONObject) 
-		{
-			the_writer.WriteLine (obj.ToString ());
-			the_writer.Flush ();
-		}	
+		the_writer.WriteLine (obj.ToString ());
+		the_writer.Flush ();
 	}
 		
 }

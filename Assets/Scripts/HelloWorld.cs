@@ -1,26 +1,15 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class HelloWorld : MonoBehaviour {
-
-	// Use this for initialization
-	VoIPManager voip;
-
-	void Start () {
-		voip = VoIPManager.Instance;
-		voip.connect_async ("app1", "uid1", callback);
-	}
-
-	void callback(bool result)
+public class HelloWorld : MonoBehaviour
+{
+	void Start ()
 	{
-		Debug.Log (result);
-		if (result)
-			voip.enter_channel_async ("channel1");
-		
-	}
-	
-	// Update is called once per frame
-	void Update () {
-
+		VoIPManager.Instance.connect_async ("app1", "user2", (result) => {
+			Debug.Log (string.Format ("connect async callback : {0}", result));
+			if (result) {
+				VoIPManager.Instance.enter_channel_async ("channel1");
+			}
+		});
 	}
 }
