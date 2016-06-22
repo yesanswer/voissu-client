@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Net;
 using Boomlagoon.JSON;
+using System.Text;
 public enum VOIP_STATUS
 {
 	CONNECTING,
@@ -84,6 +85,7 @@ public class VoIPManager : MonoBehaviour {
 
 	private IEnumerator enter_channel_coroutine(string channel_id)
 	{
+		DataPacket dp = null;
 		JSONObject obj = new JSONObject ();
 		string private_ip = get_private_ip ();
 		if (private_ip == null) {
@@ -100,8 +102,8 @@ public class VoIPManager : MonoBehaviour {
 
 		for (int i = 0; i < 3; i++)
 		{
-			DataPacket dp = new DataPacket (guid, 0, 0, new byte[0]);
-			data_channel.send_message (GLOBAL.SERVER_IP, dp);
+			dp = new DataPacket (guid, 0, 0, new byte[0]);
+			data_channel.send_message (GLOBAL.SERVER_IP, GLOBAL.DATA_PORT, dp);
 			yield return new WaitForSeconds (0.5f);
 			if (status == VOIP_STATUS.ENTERRING2)
 				break;
@@ -116,6 +118,28 @@ public class VoIPManager : MonoBehaviour {
 		{
 			Debug.Log("<peer> private ip: " + peer.private_ip + " public ip: " + peer.public_ip + " public port: " + peer.public_port );
 		}
+
+		dp = new DataPacket (uid, 1, 1, Encoding.UTF8.GetBytes("Hello world!!"));
+
+		for (int i = 0; i < 3; i++) 
+		{
+			foreach (Peer peer in peer_list) 
+			{
+				data_channel.send_message (peer.private_ip, peer.private_port, dp);
+			}
+			yield return new WaitForSeconds (0.5f);
+		}
+
+		for (int i = 0; i < 3; i++) 
+		{
+			foreach(Peer peer in peer_list)
+			{
+				data_channel.send_message (peer.public_ip, peer.public_port, dp);
+			}
+			yield return new WaitForSeconds (0.5f);
+		}
+
+
 	}
 
 	/// <summary>
@@ -157,7 +181,7 @@ public class VoIPManager : MonoBehaviour {
 				string public_ip = public_address.GetString ("ip");
 				int public_port = (int)public_address.GetNumber ("port");
 
-				Peer peer = new Peer (uid, public_ip, public_port, private_ip, GLOBAL.PORT);
+				Peer peer = new Peer (uid, public_ip, public_port, private_ip, GLOBAL.DATA_PORT);
 				peer_list.Add (peer);
 			}
 
@@ -173,6 +197,18 @@ public class VoIPManager : MonoBehaviour {
 		if (obj != null) {
 			Debug.Log ("recv packet: " + obj.ToString ());
 			execute_packet (obj);
+		}
+		DataPacket dp = null;
+		while (true) 
+		{
+			dp = data_channel.receive_message ();
+			if (dp == null)
+				break;
+			Debug.Log ("receive udp message ");
+			if (dp.type == 1) {
+				byte[] data = dp.data;
+				Debug.Log (Encoding.UTF8.GetString (data));
+			}
 		}
 	}
 }
