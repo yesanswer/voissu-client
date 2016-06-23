@@ -98,6 +98,9 @@ public class VoIPManager : MonoBehaviour
 
 	private IEnumerator enter_channel_coroutine (string channel_id, Action<bool> callback)
 	{
+		vi = this.gameObject.AddComponent<VoissuInput> ();
+		vo = this.gameObject.AddComponent<VoissuOutput> ();
+
 		DataPacket dp = null;
 		JSONObject obj = new JSONObject ();
 		string private_ip = get_private_ip ();
@@ -159,9 +162,8 @@ public class VoIPManager : MonoBehaviour
 		control_channel.send_message (obj);
 		Debug.Log ("p2p connection result send");
 
-		vi = this.gameObject.AddComponent<VoissuInput> ();
+
 		vi.AddOnRecordListener (OnRecordListener);
-		vo = this.gameObject.AddComponent<VoissuOutput> ();
 
 		vi.RecordStart (VoissuOutput.samplingRate, VoissuOutput.samplingSize);
 		foreach (Peer p in peer_list) {

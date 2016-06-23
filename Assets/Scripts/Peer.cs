@@ -37,7 +37,7 @@ public class Peer
 
 	public IEnumerator p2p_connect(DataChannel data_channel)
 	{
-		DataPacket dp = new DataPacket (VoIPManager.Instance.my_uid, 1, 1, Encoding.UTF8.GetBytes("Hello world!!"));
+		DataPacket dp = new DataPacket (VoIPManager.Instance.my_uid, PROTOCOL.UDP_PRIVATE_CONNECT, 1, Encoding.UTF8.GetBytes("Hello world!!"));
 		Debug.Log ("peer.p2p_connect call " + VoIPManager.Instance.my_uid);
 
 		connection_status = PEER_STATUS.PRIVATE_CONNECTING;
@@ -49,6 +49,8 @@ public class Peer
 			if (connection_status != PEER_STATUS.PRIVATE_CONNECTED)
 				yield break;	
 		}
+
+		dp = new DataPacket (VoIPManager.Instance.my_uid, PROTOCOL.UDP_PUBLIC_CONNECT, 1, Encoding.UTF8.GetBytes("Hello world!!"));
 
 		connection_status = PEER_STATUS.PUBLIC_CONNECTING;
 		for (int i = 0; i < 5; i++) 
