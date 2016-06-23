@@ -88,7 +88,7 @@ namespace NSpeex
                     pos++;
                 }
 
-                Debug.Assert(pos <= filled && pos < MAX_TIMINGS);
+                UnityEngine.Debug.Assert(pos <= filled && pos < MAX_TIMINGS);
 
                 /* Shift everything so we can perform the insertion */
                 if (pos < filled)
@@ -726,7 +726,7 @@ namespace NSpeex
                 {
                     if (packets[i].len > packet.len)
                     {
-                        Debug.WriteLine("JitterBuffer.Get(): packet too large to fit. Size is", packets[i].len);
+						UnityEngine.Debug.Log("JitterBuffer.Get(): packet too large to fit. Size is " + packets[i].len);
                     }
                     else
                     {
@@ -743,7 +743,7 @@ namespace NSpeex
                 if (start_offset != 0)
                     start_offset = offset;
                 else if (offset != 0)
-                    Debug.WriteLine("JitterBuffer.Get(): discarding non-zero start_offset", offset);
+					UnityEngine.Debug.Log("JitterBuffer.Get(): discarding non-zero start_offset " + offset);
 
                 packet.timestamp = packets[i].timestamp;
                 last_returned_timestamp = packet.timestamp;
@@ -861,7 +861,7 @@ namespace NSpeex
             else
             {
                 next_stop = pointer_timestamp;
-                Debug.WriteLine("jitter buffer sees negative buffering, your code might be broken. Value is ", buffered);
+				UnityEngine.Debug.Log("jitter buffer sees negative buffering, your code might be broken. Value is " + buffered);
             }
             buffered = 0;
         }
