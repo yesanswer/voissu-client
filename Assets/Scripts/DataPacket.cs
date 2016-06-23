@@ -8,8 +8,15 @@ public class DataPacket
 	public byte[] buf;
 
 	public string id {
+		set {
+			string padding_id = string.Format ("{0,-36}", value);
+			byte[] byte_id = Encoding.UTF8.GetBytes (padding_id);
+			Buffer.BlockCopy (byte_id, 0, buf, 0, 36);
+
+			
+		}
 		get {
-			return Encoding.UTF8.GetString (buf, 0, 36);
+			return Encoding.UTF8.GetString (buf, 0, 36).Trim();
 		}
 	}
 

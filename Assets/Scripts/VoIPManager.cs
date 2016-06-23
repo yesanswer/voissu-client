@@ -23,6 +23,9 @@ public class VoIPManager : MonoBehaviour
 	ControlChannel control_channel;
 	DataChannel data_channel;
 
+	private VoissuInput vi;
+	private VoissuOutput vo;
+	private int nextseq = 1;
 	public string my_guid {
 		get;
 		private set;
@@ -61,6 +64,7 @@ public class VoIPManager : MonoBehaviour
 	{
 		this.peer_list = new ArrayList ();
 		user_connect_callback = null;
+
 	}
 
 
@@ -128,24 +132,58 @@ public class VoIPManager : MonoBehaviour
 			Debug.Log ("<peer> private ip: " + peer.private_ip + " public ip: " + peer.public_ip + " public port: " + peer.public_port);
 			StartCoroutine (peer.p2p_connect (data_channel));
 		}
-
+			
 		for (int i = 0; i < 10; i++) {
 			bool result = true;
 			foreach(Peer p in peer_list){
-				if (p.connection_status != CONNECTION_STATUS.CONNECTED)
+				if (p.connection_status != PEER_STATUS.PRIVATE_CONNECTED && p.connection_status != PEER_STATUS.PUBLIC_CONNECTED)
 					result = false;
 			}
 
 			if (result == true) {
 				Debug.Log("enter channel success");
 				callback (true);
-				yield break;
+				break;
 			}
 			yield return new WaitForSeconds (0.5f);
 		}
 
-		callback (false);
+		obj = new JSONObject ();
+		JSONArray success_list = new JSONArray ();
+		foreach (Peer p in peer_list) {
+			if (p.connection_status != PEER_STATUS.RELAY_CONNECTED)
+				success_list.Add (new JSONValue(p.uid));
+		}
+		obj.Add ("type", PROTOCOL.REQUEST_TYPE_P2P_STATUS_SYNC);
+		obj.Add ("users", success_list);
+		control_channel.send_message (obj);
+		Debug.Log ("p2p connection result send");
+
+		vi = this.gameObject.AddComponent<VoissuInput> ();
+		vi.AddOnRecordListener (OnRecordListener);
+		vo = this.gameObject.AddComponent<VoissuOutput> ();
+
+		vi.RecordStart (VoissuOutput.samplingRate, VoissuOutput.samplingSize);
+		foreach (Peer p in peer_list) {
+			vo.AddAudioItem (p.uid, 1);
+		}
+		callback (true);
 	}
+	
+
+	private void OnRecordListener(byte[] data, int sampling_buffer_size)
+	{
+		byte[] buf = new byte[data.Length + 4];
+		Buffer.BlockCopy (BitConverter.GetBytes (sampling_buffer_size), 0, data, 0, 4);
+		Buffer.BlockCopy (data, 0, buf, 4, data.Length);
+
+		DataPacket dp = new DataPacket (my_uid, PROTOCOL.UDP_DATA, nextseq++, buf);
+		foreach (Peer p in peer_list) {
+			p.send_data (dp, data_channel);
+		}
+		Debug.Log ("sound send");
+	}
+
 
 	/// <summary>
 	/// Gets the private ip on success, null on fail
@@ -209,6 +247,7 @@ public class VoIPManager : MonoBehaviour
 
 				Peer peer = new Peer (uid, public_ip, public_port, private_ip, GLOBAL.DATA_PORT);
 				peer_list.Add (peer);
+				vo.AddAudioItem (peer.uid, 1);
 				StartCoroutine (peer.p2p_connect (data_channel));
 
 			}
@@ -239,13 +278,45 @@ public class VoIPManager : MonoBehaviour
 			dp = data_channel.receive_message ();
 			if (dp == null)
 				break;
-			Debug.Log ("receive udp message: ");
-			if (dp.type == 1) {
-				byte[] data = dp.data;
-				string str = string.Format ("{0} {1} {2} {3}", dp.id, dp.type, dp.seq, Encoding.UTF8.GetString (data));
-				Debug.Log (str);
+			Peer p = get_peer (dp.id);
 
+			Debug.Log ("receive udp message: ");
+			switch (dp.type) {
+			case PROTOCOL.UDP_PRIVATE_CONNECT:
+				p.connection_status = PEER_STATUS.PRIVATE_CONNECTED;
+
+				break;
+			case PROTOCOL.UDP_PUBLIC_CONNECT:
+				p.connection_status = PEER_STATUS.PUBLIC_CONNECTED;
+
+				break;
+			case PROTOCOL.UDP_DATA:
+				{
+					Debug.Log ("sound receive");
+					byte[] buf = dp.data;
+					byte[] stream = new byte[buf.Length - 4];
+					int sambufsize;
+					Buffer.BlockCopy (buf, 4, stream, 0, buf.Length - 4);
+					sambufsize = BitConverter.ToInt32 (buf, 0);
+					vo.AddSamplingData (dp.id, stream, sambufsize);
+
+				}				
+				break;
+			default:
+				Debug.Log ("undefined udp message: " + dp.type);
+				break;	
 			}
 		}
+
+	}
+
+	private Peer get_peer(string uid)
+	{
+		foreach(Peer p in peer_list)
+		{
+			if (p.uid == uid)
+				return p;
+		}
+		return null;
 	}
 }
