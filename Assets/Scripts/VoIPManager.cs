@@ -78,19 +78,20 @@ public class VoIPManager : MonoBehaviour
 		});
 	}
 
-	public void enter_channel_async (string channel_id)
+	public void enter_channel_async (string channel_id, Action<bool> callback)
 	{
 		Debug.Log ("enter_channel_async call");
-		StartCoroutine (enter_channel_coroutine (channel_id));
+		StartCoroutine (enter_channel_coroutine (channel_id, callback));
 	}
 
-	private IEnumerator enter_channel_coroutine (string channel_id)
+	private IEnumerator enter_channel_coroutine (string channel_id, Action<bool> callback)
 	{
 		DataPacket dp = null;
 		JSONObject obj = new JSONObject ();
 		string private_ip = get_private_ip ();
 		if (private_ip == null) {
 			Debug.Log ("get private ip faild");
+			callback (false);
 			yield break;
 		}
 		obj.Add ("type", PROTOCOL.REQUEST_TYPE_ENTER_CHANNEL);
@@ -111,6 +112,7 @@ public class VoIPManager : MonoBehaviour
 
 		if (status != VOIP_STATUS.ENTERRING2) {
 			Debug.Log ("enter channel timeout");
+			callback (false);
 			yield break;
 		}
 
@@ -118,6 +120,23 @@ public class VoIPManager : MonoBehaviour
 			Debug.Log ("<peer> private ip: " + peer.private_ip + " public ip: " + peer.public_ip + " public port: " + peer.public_port);
 			yield return StartCoroutine (peer.p2p_connect (data_channel));
 		}
+
+		for (int i = 0; i < 10; i++) {
+			bool result = true;
+			foreach(Peer p in peer_list){
+				if (p.connection_status != CONNECTION_STATUS.CONNECTED)
+					result = false;
+			}
+
+			if (result == true) {
+				Debug.Log("enter channel success");
+				callback (true);
+				yield break;
+			}
+			yield return new WaitForSeconds (0.3f);
+		}
+
+		callback (false);
 	}
 
 	/// <summary>
@@ -183,6 +202,14 @@ public class VoIPManager : MonoBehaviour
 				peer_list.Add (peer);
 				StartCoroutine (peer.p2p_connect (data_channel));
 
+			}
+			break;
+		case PROTOCOL.REQUEST_TYPE_PING:
+			{
+				JSONObject response = new JSONObject ();
+				response.Add ("type", PROTOCOL.PONG);
+				control_channel.send_message (response);
+				Debug.Log ("pong");
 			}
 			break;
 		default:

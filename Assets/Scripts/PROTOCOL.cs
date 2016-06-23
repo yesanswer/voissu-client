@@ -4,6 +4,7 @@ public class PROTOCOL
 {
 	public const int REQUEST_TYPE_SIGN_OUT = 1001;
 	public const int REQUEST_TYPE_PING = 1002;
+	public const int PONG = 1003;
 
 	public const int REQUEST_TYPE_ENTER_CHANNEL = 1010;
 	public const int REQUEST_TYPE_EXIT_CHANNEL = 1011;
