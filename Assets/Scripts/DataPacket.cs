@@ -41,6 +41,8 @@ public class DataPacket
 
 	public DataPacket (string id, int type, int seq, byte[] data)
 	{
+		id = string.Format ("{0,-36}", id);
+		
 		byte[] byte_id = Encoding.UTF8.GetBytes (id);
 		byte[] byte_type = BitConverter.GetBytes (type);
 		byte[] byte_seq = BitConverter.GetBytes (seq);

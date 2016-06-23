@@ -57,7 +57,7 @@ public class VoIPManager : MonoBehaviour
 
 	public void connect_async (string appid, string uid, Action<bool> callback)
 	{
-		this.uid = string.Format ("{0,-36}", uid);
+		this.uid = uid;
 		this.guid = null;
 		status = VOIP_STATUS.CONNECTING;
 		control_channel = new ControlChannel ();
