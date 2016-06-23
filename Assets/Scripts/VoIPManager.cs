@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Net;
+using System.Net.Sockets;
 using Boomlagoon.JSON;
 using System.Text;
 using System;
@@ -124,13 +125,17 @@ public class VoIPManager : MonoBehaviour
 	/// </summary>
 	private string get_private_ip ()
 	{
-		Debug.Log (Dns.GetHostName ());
-		IPAddress[] address = Dns.GetHostAddresses (Dns.GetHostName ());
-		if (address.Length > 0) {
-			return address [address.Length - 1].ToString ();
-		} else {
-			return null;
+		string localIP;
+		using (Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, 0))
+		{
+			socket.Connect("8.8.8.8", 65530);
+			IPEndPoint endPoint = socket.LocalEndPoint as IPEndPoint;
+			socket.Close ();
+			localIP = endPoint.Address.ToString();
+			Debug.Log ("local ip: " + localIP);
+			return localIP;
 		}
+		return null;
 	}
 
 	private void execute_packet (JSONObject obj)
