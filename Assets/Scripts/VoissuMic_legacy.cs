@@ -47,7 +47,7 @@ public class VoissuMic_Legacy : MonoBehaviour {
             string log = "";
             int currentPosition = Microphone.GetPosition(null);
             log += "Mic Pos : " + currentPosition;
-            mainDevice.log(log);
+            mainDevice.Log(log);
 
             // This means we wrapped around
             if (currentPosition < lastSamplePos) {
@@ -106,7 +106,7 @@ public class VoissuMic_Legacy : MonoBehaviour {
 
     public void RecordStart() {
         if (playAudio.isPlaying) {
-            this.mainDevice.log("---RecordStop---");
+            this.mainDevice.Log("---RecordStop---");
             playAudio.Stop();
         }
 
@@ -117,7 +117,7 @@ public class VoissuMic_Legacy : MonoBehaviour {
 
         ShowMicrophoneList();
         recordAudio.clip = Microphone.Start(null, true, loopTIme, samplingRate);
-        this.mainDevice.log("" + recordAudio.clip.length);
+        this.mainDevice.Log("" + recordAudio.clip.length);
 
         ShowMicrophoneDeviceCaps(null);
 
@@ -128,12 +128,12 @@ public class VoissuMic_Legacy : MonoBehaviour {
         recordSampleSize = samplingRate / (targetSamplingRate / targetSamplingSize);
         sampleBuffer = new float[recordSampleSize];
 
-        this.mainDevice.log("---RecordStart---");
+        this.mainDevice.Log("---RecordStart---");
     }
 
     public void RecordEnd () {
         if (Microphone.IsRecording(null)) {
-            this.mainDevice.log("---RecordEnd---");
+            this.mainDevice.Log("---RecordEnd---");
             Microphone.End(null);
 
             byte[] samples = null;
@@ -167,9 +167,9 @@ public class VoissuMic_Legacy : MonoBehaviour {
     }
 
    void ShowMicrophoneList () {
-        this.mainDevice.log("Device List:");
+        this.mainDevice.Log("Device List:");
         foreach (string device in Microphone.devices) {
-            this.mainDevice.log(device);
+            this.mainDevice.Log(device);
         }
     }
 
@@ -177,7 +177,7 @@ public class VoissuMic_Legacy : MonoBehaviour {
         int minFreq;
         int maxFreq;
         Microphone.GetDeviceCaps(deviceName, out minFreq, out maxFreq);
-        this.mainDevice.log("max freq : " + maxFreq);
+        this.mainDevice.Log("max freq : " + maxFreq);
     }
 
     byte[] ToByteArray (float[] floatArray) {

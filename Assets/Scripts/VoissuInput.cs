@@ -112,9 +112,9 @@ public class VoissuInput : MonoBehaviour {
     }
 
     void ShowMicrophoneList () {
-        this.mainDevice.log("Device List:");
+        this.mainDevice.Log("Device List:");
         foreach (string device in Microphone.devices) {
-            this.mainDevice.log(device);
+            this.mainDevice.Log(device);
         }
     }
 
@@ -122,7 +122,7 @@ public class VoissuInput : MonoBehaviour {
         int minFreq;
         int maxFreq;
         Microphone.GetDeviceCaps(deviceName, out minFreq, out maxFreq);
-        this.mainDevice.log("max freq : " + maxFreq);
+        this.mainDevice.Log("max freq : " + maxFreq);
     }
 
     byte[] ToByteArray (float[] floatArray) {
@@ -197,7 +197,7 @@ public class VoissuInput : MonoBehaviour {
 
         ShowMicrophoneList();
         recordAudio.clip = Microphone.Start(null, true, loopTIme, samplingRate);
-        this.mainDevice.log("" + recordAudio.clip.length);
+        this.mainDevice.Log("" + recordAudio.clip.length);
         ShowMicrophoneDeviceCaps(null);
 
         // speex
@@ -205,12 +205,12 @@ public class VoissuInput : MonoBehaviour {
         recordSampleSize = samplingRate / (ouputSamplingRate / ouputSamplingSize);
         sampleBuffer = new float[recordSampleSize];
 
-        this.mainDevice.log("---RecordStart---");
+        this.mainDevice.Log("---RecordStart---");
     }
 
     public void RecordEnd () {
         if (Microphone.IsRecording(null)) {
-            this.mainDevice.log("---RecordEnd---");
+            this.mainDevice.Log("---RecordEnd---");
             Microphone.End(null);
         }
     }
