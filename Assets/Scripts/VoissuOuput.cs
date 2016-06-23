@@ -120,32 +120,6 @@ public class VoissuOutput : MonoBehaviour {
         }
     }
 
-    /*
-    public void RecordEnd () {
-        if (Microphone.IsRecording(null)) {
-            this.mainDevice.log("---RecordEnd---");
-            Microphone.End(null);
-
-            byte[] samples = null;
-            float[] fsamples = null;
-
-            if (usingSpeex) {
-                byte[] encodeData = this.encodeBufList.ToArray(typeof(byte)) as byte[];
-                short[] decodedFrame = new short[totalSampleSize]; // should be the same number of samples as on the capturing side
-                speexDecoder.Decode(encodeData, 0, encodeData.Length, decodedFrame, 0, false);
-                fsamples = ToFloatArray(decodedFrame);
-
-            } else {
-                samples = this.encodeBufList.ToArray(typeof(byte)) as byte[];
-                fsamples = ToFloatArray(samples);
-            }
-
-            Play(fsamples, recordAudio.clip.channels);
-        }
-
-    }
-    */
-
     public AudioItem AddAudioItem(string key, int channel) {
         if (this.audioItemDict.ContainsKey(key)) {
             return null;

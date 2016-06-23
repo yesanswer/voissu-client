@@ -27,7 +27,13 @@ public class ChatState : State {
         this.voissuOutput = this.gameObject.AddComponent<VoissuOutput>();
 
         this.voissuInput.AddOnRecordListener(OnRecordListener);
-        this.voissuOutput.AddAudioItem("test", 1);
+
+        /*
+        ArrayList peer_list = VoIPManager.Instance.PeerList;
+        foreach (Peer peer in peer_list) {
+            this.voissuOutput.AddAudioItem(peer.uid, 1);
+        }
+        */
 
         this.voissuInput.RecordStart(VoissuOutput.samplingRate, VoissuOutput.samplingSize);
     }
@@ -38,6 +44,11 @@ public class ChatState : State {
 	}
 
     void OnRecordListener (byte[] encryptStream, int samplingBufferSize) {
-        this.voissuOutput.AddSamplingData("test", encryptStream, samplingBufferSize);
+        /*
+        ArrayList peer_list = VoIPManager.Instance.PeerList;
+        foreach (Peer peer in peer_list) {
+            this.voissuOutput.AddSamplingData(peer.uid, encryptStream, samplingBufferSize);
+        }
+        */
     }
 }
