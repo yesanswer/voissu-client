@@ -20,6 +20,7 @@ public class DataChannel
 	{
 		message_queue = new Queue ();
 		channel = new UdpClient ();
+		channel.Client.Bind (new IPEndPoint (IPAddress.Parse ("0.0.0.0"), GLOBAL.DATA_PORT));
 		channel.BeginReceive (receive_complete, null);
 	}
 

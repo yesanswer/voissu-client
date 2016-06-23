@@ -118,7 +118,7 @@ public class VoIPManager : MonoBehaviour
 
 		foreach (Peer peer in peer_list) {
 			Debug.Log ("<peer> private ip: " + peer.private_ip + " public ip: " + peer.public_ip + " public port: " + peer.public_port);
-			yield return StartCoroutine (peer.p2p_connect (data_channel));
+			StartCoroutine (peer.p2p_connect (data_channel));
 		}
 
 		for (int i = 0; i < 10; i++) {
@@ -133,7 +133,7 @@ public class VoIPManager : MonoBehaviour
 				callback (true);
 				yield break;
 			}
-			yield return new WaitForSeconds (0.3f);
+			yield return new WaitForSeconds (0.5f);
 		}
 
 		callback (false);
@@ -159,7 +159,7 @@ public class VoIPManager : MonoBehaviour
 
 	private void execute_packet (JSONObject obj)
 	{
-		Debug.Log ("execute_packet");
+		//Debug.Log ("execute_packet");
 
 		int type = (int)obj.GetNumber ("type");
 		switch (type) {
@@ -192,7 +192,7 @@ public class VoIPManager : MonoBehaviour
 			break;
 		case PROTOCOL.RESPONSE_TYPE_OTHER_USER_JOIN_CHANNEL:
 			{
-				Debug.Log ("other user join channel");
+				Debug.Log ("other user join channel :" + obj);
 				string private_ip = obj.GetString ("private_udp_address");
 				JSONObject public_address = obj.GetObject ("public_udp_address");
 				string public_ip = public_address.GetString ("ip");
@@ -209,7 +209,7 @@ public class VoIPManager : MonoBehaviour
 				JSONObject response = new JSONObject ();
 				response.Add ("type", PROTOCOL.PONG);
 				control_channel.send_message (response);
-				Debug.Log ("pong");
+		//		Debug.Log ("pong");
 			}
 			break;
 		default:
@@ -222,7 +222,7 @@ public class VoIPManager : MonoBehaviour
 	{
 		JSONObject obj = control_channel.receive_message ();
 		if (obj != null) {
-			Debug.Log ("recv packet: " + obj.ToString ());
+	//		Debug.Log ("recv packet: " + obj.ToString ());
 			execute_packet (obj);
 		}
 		DataPacket dp = null;
