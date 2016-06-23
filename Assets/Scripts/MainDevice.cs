@@ -5,6 +5,7 @@ using System.Collections;
 public class MainDevice : MonoBehaviour {
     readonly bool debug = true;
     readonly int logMaxLines = 100;
+    readonly string appID = "app1";
 
     public GameObject panelInit;
     public GameObject panelChat;
@@ -27,7 +28,7 @@ public class MainDevice : MonoBehaviour {
     State currentState = null;
     int logLineCount = 0;
     float connectingTimeForSeconds = 0.0f;
-    bool connectComplete = false;
+    bool isRequestConnecting = false;
 
     // Use this for initialization
     void Start () {
@@ -64,47 +65,70 @@ public class MainDevice : MonoBehaviour {
     }
     
     void EnterChannel() {
+        string id = this.inputID.text;
         string channel = this.inputChannel.text;
 
+        if (id.Length == 0) {
+            Message("Does not exists ID");
+            return;
+        }
+
+        if (channel.Length == 0) {
+            Message("Does not exists Chennel");
+            return;
+        }
+
+        BeginConnectingState();
+
+        VoIPManager.Instance.connect_async(this.appID, id, (connect_result) => {
+            Debug.Log(string.Format("connect async callback : {0}", connect_result));
+
+            if (connect_result) {
+                VoIPManager.Instance.enter_channel_async(channel, (enter_channel_result) => {
+                    Debug.Log(string.Format("enter channel callback : {0}", enter_channel_result));
+
+                    if (enter_channel_result) {
+                        Message(string.Format("Enter Channel : {0}", channel));
+                        EndConnectingState();
+                        ChangeState<ChatState>();
+                    } else {
+                        EndConnectingState();
+                        Message("Enter Channel Failed");
+                    }
+                });
+
+            } else {
+                EndConnectingState();
+                Message("Connect Failed");
+            }
+        });
+
+    }
+
+    void ExitChannel() {
+        ChangeState<InitState>();
+    }
+
+    void BeginConnectingState () {
         this.inputID.interactable = false;
         this.inputChannel.interactable = false;
         this.btnEnter.gameObject.SetActive(false);
         this.btnConnecting.gameObject.SetActive(true);
 
         this.connectingTimeForSeconds = 0.0f;
-        this.connectComplete = false;
-        StartCoroutine(ConnectingChannel());
+        this.isRequestConnecting = true;
+
+        StartCoroutine(CoroutineConnectingChannel());
     }
 
-    void ExitChannel() {
-        ChangeState<InitState>();
+    void EndConnectingState () {
+        this.connectingTimeForSeconds = 0.0f;
+        this.isRequestConnecting = false;
 
         this.inputID.interactable = true;
         this.inputChannel.interactable = true;
         this.btnEnter.gameObject.SetActive(true);
         this.btnConnecting.gameObject.SetActive(false);
-        this.connectingTimeForSeconds = 0.0f;
-        this.connectComplete = false;
-    }
-
-    IEnumerator ConnectingChannel() {
-        while (!this.connectComplete) {
-            yield return new WaitForSeconds(0.5f);
-
-            Text btnText = this.btnConnecting.GetComponentInChildren<Text>();
-            btnText.text = "Connecting";
-            for (int i=0; i<=(this.connectingTimeForSeconds % 3); ++i) {
-                btnText.text += ".";
-            }
-
-            this.connectingTimeForSeconds += 0.5f;
-
-            // test code
-            if (this.connectingTimeForSeconds > 3.0f) {
-                this.connectComplete = true;
-                ChangeState<ChatState>();
-            }
-        }
     }
 
     public void Log (string text) {
@@ -133,15 +157,15 @@ public class MainDevice : MonoBehaviour {
 
         if (this.coroutineMessage != null) {
             StopCoroutine(this.coroutineMessage);
-            Color color = new Color(
-                this.textMessage.color.r,
-                this.textMessage.color.g,
-                this.textMessage.color.b,
-                1.0f);
-
-            this.textMessage.color = color;
         }
 
+        Color color = new Color(
+            this.textMessage.color.r,
+            this.textMessage.color.g,
+            this.textMessage.color.b,
+            1.0f);
+
+        this.textMessage.color = color;
         this.textMessage.text = text;
         this.coroutineMessage = StartCoroutine(CoroutineMessage());
     }
@@ -153,6 +177,20 @@ public class MainDevice : MonoBehaviour {
         }
 
         this.currentState = this.gameObject.AddComponent<T>();
+    }
+
+    IEnumerator CoroutineConnectingChannel () {
+        while (this.isRequestConnecting) {
+            yield return new WaitForSeconds(0.5f);
+
+            Text btnText = this.btnConnecting.GetComponentInChildren<Text>();
+            btnText.text = "Connecting";
+            for (int i = 0; i <= (this.connectingTimeForSeconds % 3); ++i) {
+                btnText.text += ".";
+            }
+
+            this.connectingTimeForSeconds += 1.0f;
+        }
     }
 
     public IEnumerator CoroutineMessage() {
