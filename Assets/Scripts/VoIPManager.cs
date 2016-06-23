@@ -193,6 +193,7 @@ public class VoIPManager : MonoBehaviour
 		case PROTOCOL.RESPONSE_TYPE_OTHER_USER_JOIN_CHANNEL:
 			{
 				Debug.Log ("other user join channel :" + obj);
+				string uid = obj.GetString ("uid");
 				string private_ip = obj.GetString ("private_udp_address");
 				JSONObject public_address = obj.GetObject ("public_udp_address");
 				string public_ip = public_address.GetString ("ip");
