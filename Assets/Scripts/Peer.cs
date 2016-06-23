@@ -46,7 +46,7 @@ public class Peer
 			Debug.Log ("private udp send " + private_ip + " " + private_port);
 			data_channel.send_message (private_ip, private_port, dp);
 			yield return new WaitForSeconds (0.3f);
-			if (connection_status != PEER_STATUS.PRIVATE_CONNECTED)
+			if (connection_status == PEER_STATUS.PRIVATE_CONNECTED)
 				yield break;	
 		}
 
@@ -58,7 +58,7 @@ public class Peer
 			Debug.Log ("public udp send");
 			data_channel.send_message (public_ip, public_port, dp);
 			yield return new WaitForSeconds (0.3f);
-			if (connection_status != PEER_STATUS.PUBLIC_CONNECTED)
+			if (connection_status == PEER_STATUS.PUBLIC_CONNECTED)
 				yield break;	
 		}
 
