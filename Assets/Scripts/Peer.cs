@@ -35,19 +35,23 @@ public class Peer
 
 	public IEnumerator p2p_connect(DataChannel data_channel)
 	{
-		DataPacket dp = new DataPacket (uid, 1, 1, Encoding.UTF8.GetBytes("Hello world!!"));
+		DataPacket dp = new DataPacket (VoIPManager.Instance.my_uid, 1, 1, Encoding.UTF8.GetBytes("Hello world!!"));
+		Debug.Log ("peer.p2p_connect call");
 
 		for (int i = 0; i < 10; i++) 
 		{
+			Debug.Log ("private udp send " + private_ip + " " + private_port);
+			data_channel.send_message (private_ip, private_port, dp);
+			yield return new WaitForSeconds (0.3f);
+		}
+
+		for (int i = 0; i < 10; i++) 
+		{
+			Debug.Log ("public udp send");
 			data_channel.send_message (public_ip, public_port, dp);
 			yield return new WaitForSeconds (0.3f);
 		}
 
-		for (int i = 0; i < 10; i++) 
-		{
-			data_channel.send_message (private_ip, private_port, dp);
-			yield return new WaitForSeconds (0.3f);
-		}
 	}
 
 

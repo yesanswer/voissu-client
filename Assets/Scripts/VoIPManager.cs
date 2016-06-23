@@ -23,8 +23,16 @@ public class VoIPManager : MonoBehaviour
 	ControlChannel control_channel;
 	DataChannel data_channel;
 
-	private string guid;
-	private string uid;
+	public string my_guid {
+		get;
+		private set;
+	}
+
+	public string my_uid {
+		get;
+		private set;
+	}
+		
 	private ArrayList peer_list;
 	VOIP_STATUS status;
 
@@ -58,8 +66,8 @@ public class VoIPManager : MonoBehaviour
 
 	public void connect_async (string appid, string uid, Action<bool> callback)
 	{
-		this.uid = uid;
-		this.guid = null;
+		this.my_uid = uid;
+		this.my_guid = null;
 		status = VOIP_STATUS.CONNECTING;
 		control_channel = new ControlChannel ();
 		data_channel = new DataChannel ();
@@ -95,15 +103,15 @@ public class VoIPManager : MonoBehaviour
 			yield break;
 		}
 		obj.Add ("type", PROTOCOL.REQUEST_TYPE_ENTER_CHANNEL);
-		obj.Add ("guid", guid);
-		obj.Add ("uid", uid);
+		obj.Add ("guid", this.my_guid);
+		obj.Add ("uid", this.my_uid);
 		obj.Add ("private_udp_address", private_ip);
 		obj.Add ("channel_id", channel_id);
 		control_channel.send_message (obj);
 		status = VOIP_STATUS.ENTERRING1;
 
 		for (int i = 0; i < 3; i++) {
-			dp = new DataPacket (guid, 0, 0, new byte[0]);
+			dp = new DataPacket (this.my_guid, 0, 0, new byte[0]);
 			data_channel.send_message (GLOBAL.SERVER_IP, GLOBAL.DATA_PORT, dp);
 			yield return new WaitForSeconds (0.5f);
 			if (status == VOIP_STATUS.ENTERRING2)
@@ -166,7 +174,7 @@ public class VoIPManager : MonoBehaviour
 		case PROTOCOL.RESPONSE_TYPE_SIGN_IN:
 			bool success = obj.GetBoolean ("success");
 			if (success) {
-				guid = obj.GetString ("guid");
+				this.my_guid = obj.GetString ("guid");
 				status = VOIP_STATUS.CONNECTED;
 				user_connect_callback (true);
 			} else {
