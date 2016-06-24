@@ -141,6 +141,32 @@ public class VoissuInput : MonoBehaviour {
         this.mainDevice.Log("max freq : " + maxFreq);
     }
 
+    void PerformEchoCancellation (short[] recorded, short[] played, short[] outFrame) {
+        throw new NotImplementedException();
+
+        // ks 11/2/11 - This seems to be more-or-less the order in which things are processed in the WebRtc audio_processing_impl.cc file.
+        //highPassFilter.Filter(recorded);
+
+        /*
+        if (VoissuInput.enableAec) {
+            aec.ProcessFrame(recorded, played, outFrame, 0);
+        } else {
+            Buffer.BlockCopy(recorded, 0, outFrame, 0, SamplesPerFrame * sizeof(short));
+        }
+
+        if (VoissuInput.enableDenoise) {
+            // ks 11/14/11 - The noise suppressor only supports 10 ms blocks. I might be able to fix that,
+            // but this is easier for now.
+            ns.ProcessFrame(outFrame, 0, outFrame, 0);
+            ns.ProcessFrame(outFrame, recordedAudioFormat.SamplesPer10Ms, outFrame, recordedAudioFormat.SamplesPer10Ms);
+        }
+
+        if (enableAgc) {
+            gain_control_ProcessCaptureAudio(outFrame);
+        }
+        */
+    }
+    
     public void RecordStart (int ouputSamplingRate, int ouputSamplingSize) {
         this.ouputSamplingSize = ouputSamplingSize;
         this.ouputSamplingRate = ouputSamplingRate;
