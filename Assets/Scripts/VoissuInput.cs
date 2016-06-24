@@ -16,6 +16,7 @@ public class VoissuInput : MonoBehaviour {
     AudioSource recordAudio = null;
 
     // Variable
+    string microphoneDevice = null;
     int ouputSamplingSize = 0;
     int ouputSamplingRate = 0;
     int lastSamplePos = 0;
@@ -42,8 +43,9 @@ public class VoissuInput : MonoBehaviour {
     }
 
     void Update () {
-        if (recordAudio && Microphone.IsRecording(null)) {
-            int currentPosition = Microphone.GetPosition(null);
+        if (recordAudio && Microphone.IsRecording(this.microphoneDevice)) {
+            int currentPosition = Microphone.GetPosition(this.microphoneDevice);
+            this.mainDevice.Log("position : " + currentPosition);
 
             // This means we wrapped around
             if (currentPosition < lastSamplePos) {
@@ -195,10 +197,17 @@ public class VoissuInput : MonoBehaviour {
         this.totalSampleSize = 0;
         this.sampleIndex = 0;
 
+        //Microphone.devices
+        if (Microphone.devices.Length == 0) {
+            this.microphoneDevice = null;
+        } else {
+            this.microphoneDevice = Microphone.devices[0];
+        }
+
         ShowMicrophoneList();
-        recordAudio.clip = Microphone.Start(null, true, loopTIme, samplingRate);
+        recordAudio.clip = Microphone.Start(this.microphoneDevice, true, loopTIme, samplingRate);
         this.mainDevice.Log("" + recordAudio.clip.length);
-        ShowMicrophoneDeviceCaps(null);
+        ShowMicrophoneDeviceCaps(this.microphoneDevice);
 
         // speex
         speexEncoder = new SpeexEncoder(BandMode.Narrow);
@@ -209,9 +218,9 @@ public class VoissuInput : MonoBehaviour {
     }
 
     public void RecordEnd () {
-        if (Microphone.IsRecording(null)) {
+        if (Microphone.IsRecording(this.microphoneDevice)) {
             this.mainDevice.Log("---RecordEnd---");
-            Microphone.End(null);
+            Microphone.End(this.microphoneDevice);
         }
     }
 

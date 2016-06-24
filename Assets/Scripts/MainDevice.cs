@@ -78,6 +78,9 @@ public class MainDevice : MonoBehaviour {
             return;
         }
 
+        ChangeState<ChatState>();
+
+        /*
         BeginConnectingState();
 
         VoIPManager.Instance.connect_async(this.appID, id, (connect_result) => {
@@ -102,7 +105,7 @@ public class MainDevice : MonoBehaviour {
                 Message("Connect Failed");
             }
         });
-
+        */
     }
 
     void ExitChannel() {

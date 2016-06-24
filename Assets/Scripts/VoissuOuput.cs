@@ -137,6 +137,9 @@ public class VoissuOutput : MonoBehaviour {
         item.prevTimeSamples = 0;
         item.remainedSamples = 0;
 
+        //AudioLowPassFilter filter = item.playAudio.gameObject.AddComponent<AudioLowPassFilter>();
+        //filter.
+
         this.audioItemDict.Add(key, item);
         return item;
     }
@@ -146,11 +149,12 @@ public class VoissuOutput : MonoBehaviour {
             return;
         }
 
-        AudioItem item = new AudioItem();
+        AudioItem item = this.audioItemDict[key];
         if (item.playAudio) {
             if (item.playAudio.isPlaying) {
                 item.playAudio.Stop();
             }
+            GameObject.Destroy(item.playAudio);
         }
 
         this.audioItemDict.Remove(key);
