@@ -49,62 +49,38 @@ public class VoissuOutput : MonoBehaviour {
                 this.prevTimeSamples = 0;
             }
 
-            if (this.streamPool.Count == 0) {
-                return;
-            }
-            
-            KeyValuePair<byte[], int> streamData = this.streamPool.Dequeue();
-            byte[] samples = streamData.Key;
-            int samplingBufferSize = streamData.Value;
+            while (this.streamPool.Count > 0) {
+                KeyValuePair<byte[], int> streamData = this.streamPool.Dequeue();
+                byte[] samples = streamData.Key;
+                int samplingBufferSize = streamData.Value;
 
-            if (this.decodedFrame == null) {
-                this.decodedFrame = new short[samplingBufferSize]; // should be the same number of samples as on the capturing side
-            }
-            
-            int len = this.speexDecoder.Decode(samples, 0, samples.Length, decodedFrame, 0, false);
+                if (this.decodedFrame == null) {
+                    this.decodedFrame = new short[samplingBufferSize]; // should be the same number of samples as on the capturing side
+                }
 
-            if (this.fdecodedFrame == null) {
-                this.fdecodedFrame = new float[this.decodedFrame.Length];
-            }
+                int len = this.speexDecoder.Decode(samples, 0, samples.Length, decodedFrame, 0, false);
 
-            float[] fsamples = Util.ToFloatArray(decodedFrame, this.fdecodedFrame);
-            Array.Copy(fsamples, 0, this.clipData, this.clipOffset, len);
-            this.playAudio.clip.SetData(this.clipData, 0);
+                if (this.fdecodedFrame == null) {
+                    this.fdecodedFrame = new float[this.decodedFrame.Length];
+                }
 
-            this.clipOffset += len;
-            if (this.clipOffset >= this.playAudio.clip.samples) {
-                this.clipOffset = 0;
-            }
+                float[] fsamples = Util.ToFloatArray(decodedFrame, this.fdecodedFrame);
+                Array.Copy(fsamples, 0, this.clipData, this.clipOffset, len);
+                this.playAudio.clip.SetData(this.clipData, 0);
 
-            this.remainedSamples += len;
+                this.clipOffset += len;
+                if (this.clipOffset >= this.playAudio.clip.samples) {
+                    this.clipOffset = 0;
+                }
 
-            if (!this.playAudio.isPlaying) {
-                if (this.remainedSamples >= (VoissuOutput.samplingSize * VoissuOutput.minPlaySamplingCount)) {
-                    this.playAudio.Play();
+                this.remainedSamples += len;
+
+                if (!this.playAudio.isPlaying) {
+                    if (this.remainedSamples >= (VoissuOutput.samplingSize * VoissuOutput.minPlaySamplingCount)) {
+                        this.playAudio.Play();
+                    }
                 }
             }
-
-            /*
-            if (!this.playAudio.isPlaying) {
-                Debug.Log("Play----------------------------------------------------------------" + Time.time);
-                this.playAudio.Play();
-
-            } else {
-                //this.playAudio.clip.SetData(fsamples, this.clipOffset);
-            }
-            */
-
-            /*
-            if (!this.playAudio.isPlaying) {
-                Array.Copy(fsamples, 0, this.clipData, this.clipOffset, fsamples.Length);
-                this.playAudio.clip.SetData(this.clipData, 0);
-                this.playAudio.Play();
-            } else {
-                this.playAudio.clip.SetData(fsamples, this.clipOffset);
-                //this.playAudio.Play();
-            }
-            */
-
         }
     }
 
