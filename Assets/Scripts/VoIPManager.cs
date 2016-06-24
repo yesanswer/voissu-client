@@ -292,7 +292,7 @@ public class VoIPManager : MonoBehaviour
 
 				Peer peer = new Peer (uid, public_ip, public_port, private_ip, GLOBAL.PEER_DATA_PORT);
 				peer_list.Add (peer);
-			//	vo.AddAudioItem (peer.uid, 1);
+				vo.AddAudioItem (peer.uid, 1);
 				StartCoroutine (peer.p2p_connect (data_channel));
 
 			}
@@ -316,6 +316,7 @@ public class VoIPManager : MonoBehaviour
 				Peer exit_user = get_peer (uid);
 				if (exit_user != null)
 					peer_list.Remove (exit_user);
+				vo.DelAudioItem (uid);
 			}
 			break;
 		default:
