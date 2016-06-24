@@ -3,15 +3,31 @@ using System.Collections;
 
 public class HelloWorld : MonoBehaviour
 {
+	VoIPManager voip;
 	void Start ()
 	{
-		VoIPManager.Instance.connect_async ("app1", "lee", (result) => {
-			Debug.Log (string.Format ("connect async callback : {0}", result));
-			if (result) {
-				VoIPManager.Instance.enter_channel_async ("channel1", (re) => {
-					
-				});
-			}
-		});
+		voip = VoIPManager.make_instance ("app1", "sangjun");
+		voip.enter_channel_async ("channel1", enter_channel_result);
+	
+	}
+
+	void Update()
+	{
+		if(Input.GetKeyDown(KeyCode.Escape))
+		{
+			Debug.Log ("backspace");
+			voip.exit_channel_async (exit_channel_result);
+		}
+	}
+
+	void enter_channel_result(bool result)
+	{
+	}
+
+	void exit_channel_result(bool result)
+	{	
+		Debug.Log ("quit");
+		Application.Quit();
+		
 	}
 }

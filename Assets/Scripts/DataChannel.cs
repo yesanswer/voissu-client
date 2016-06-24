@@ -11,23 +11,23 @@ public class DataChannel
 {
 	private UdpClient channel;
 	private Queue message_queue;
+	private bool ready;
 
-	private static DataChannel instance;
-	private static GameObject container;
-
-
-	public DataChannel ()
+	public DataChannel (int local_port)
 	{
 		message_queue = new Queue ();
 		channel = new UdpClient ();
-		channel.Client.Bind (new IPEndPoint (IPAddress.Parse ("0.0.0.0"), GLOBAL.DATA_PORT));
+		channel.Client.Bind (new IPEndPoint (IPAddress.Parse ("0.0.0.0"), local_port));
 		channel.BeginReceive (receive_complete, null);
+		ready = true;
 	}
 
 	public void send_message (string ip, int port, DataPacket dp)
 	{
-		byte[] buf = dp.buf;
-		channel.BeginSend (buf, buf.Length, ip, port, send_complete, null);
+		if (ready) {
+			byte[] buf = dp.buf;
+			channel.BeginSend (buf, buf.Length, ip, port, send_complete, null);
+		}
 	}
 
 	private void send_complete (IAsyncResult ar)
@@ -46,10 +46,20 @@ public class DataChannel
 
 	public DataPacket receive_message ()
 	{
-		if (message_queue.Count == 0) {
+		if (ready == false)
 			return null;
-		}
+		if (message_queue.Count == 0) 
+			return null;
 
 		return message_queue.Dequeue () as DataPacket;
 	}
+
+	public void close_channel()
+	{
+		message_queue.Clear ();
+		channel.Close ();
+		ready = false;
+	}
+
+
 }

@@ -20,5 +20,8 @@ public class PROTOCOL
 	public const int RESPONSE_TYPE_NEW_USER_JOIN_CHANNEL = 1017;
 	public const int RESPONSE_TYPE_OTHER_USER_JOIN_CHANNEL = 1018;
 	public const int RESPONSE_TYPE_SIGN_IN = 1019;
+
+	public const int RESPONSE_TYPE_EXIT_CHANNEL = 1020;
+	public const int RESPONSE_TYPE_OTHER_USER_EXIT_CHANNEL = 1022;
 }
 
