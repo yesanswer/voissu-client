@@ -67,7 +67,7 @@ public class VoissuOutput : MonoBehaviour {
                 this.fdecodedFrame = new float[this.decodedFrame.Length];
             }
 
-            float[] fsamples = ToFloatArray(decodedFrame, this.fdecodedFrame);
+            float[] fsamples = Util.ToFloatArray(decodedFrame, this.fdecodedFrame);
             Array.Copy(fsamples, 0, this.clipData, this.clipOffset, len);
             this.playAudio.clip.SetData(this.clipData, 0);
 
@@ -105,24 +105,6 @@ public class VoissuOutput : MonoBehaviour {
             }
             */
 
-        }
-
-        float[] ToFloatArray (short[] shortArray) {
-            int len = shortArray.Length;
-            float[] floatArray = new float[len];
-            for (int i = 0; i < shortArray.Length; ++i) {
-                floatArray[i] = shortArray[i] / (float)short.MaxValue;
-            }
-
-            return floatArray;
-        }
-
-        float[] ToFloatArray (short[] shortArray, float[] floatArray) {
-            for (int i = 0; i < shortArray.Length; ++i) {
-                floatArray[i] = shortArray[i] / (float)short.MaxValue;
-            }
-
-            return floatArray;
         }
     }
 
