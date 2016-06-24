@@ -13,7 +13,7 @@ public class VoissuOutput : MonoBehaviour {
     public const int minPlaySamplingCount = 5;
 
     MainDevice mainDevice;
-    
+
     // AudioItem 
     public class AudioItem {
         public AudioSource playAudio = null;
@@ -23,6 +23,10 @@ public class VoissuOutput : MonoBehaviour {
         public float[] clipData = null;
         public int clipOffset = 0;
         public SpeexDecoder speexDecoder;
+
+        // Memory Optimaization
+        short[] decodedFrame = null;
+        float[] fdecodedFrame = null;
 
         public void Update (VoissuOutput vo) {
             if (this.playAudio.isPlaying) {
@@ -53,12 +57,20 @@ public class VoissuOutput : MonoBehaviour {
             byte[] samples = streamData.Key;
             int samplingBufferSize = streamData.Value;
 
-            short[] decodedFrame = new short[samplingBufferSize]; // should be the same number of samples as on the capturing side
+            if (this.decodedFrame == null) {
+                this.decodedFrame = new short[samplingBufferSize]; // should be the same number of samples as on the capturing side
+            }
+            
             int len = this.speexDecoder.Decode(samples, 0, samples.Length, decodedFrame, 0, false);
-            float[] fsamples = ToFloatArray(decodedFrame);
 
+            if (this.fdecodedFrame == null) {
+                this.fdecodedFrame = new float[this.decodedFrame.Length];
+            }
+
+            float[] fsamples = ToFloatArray(decodedFrame, this.fdecodedFrame);
             Array.Copy(fsamples, 0, this.clipData, this.clipOffset, len);
             this.playAudio.clip.SetData(this.clipData, 0);
+
             this.clipOffset += len;
             if (this.clipOffset >= this.playAudio.clip.samples) {
                 this.clipOffset = 0;
@@ -104,6 +116,14 @@ public class VoissuOutput : MonoBehaviour {
 
             return floatArray;
         }
+
+        float[] ToFloatArray (short[] shortArray, float[] floatArray) {
+            for (int i = 0; i < shortArray.Length; ++i) {
+                floatArray[i] = shortArray[i] / (float)short.MaxValue;
+            }
+
+            return floatArray;
+        }
     }
 
     Dictionary<string, AudioItem> audioItemDict;
@@ -136,9 +156,6 @@ public class VoissuOutput : MonoBehaviour {
         item.clipOffset = 0;
         item.prevTimeSamples = 0;
         item.remainedSamples = 0;
-
-        //AudioLowPassFilter filter = item.playAudio.gameObject.AddComponent<AudioLowPassFilter>();
-        //filter.
 
         this.audioItemDict.Add(key, item);
         return item;

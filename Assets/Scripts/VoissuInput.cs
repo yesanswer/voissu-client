@@ -22,6 +22,11 @@ public class VoissuInput : MonoBehaviour {
     int lastSamplePos = 0;
     int totalSampleSize = 0;
 
+    // Memory Optimaization
+    float[] targetSampleBuffer = null;
+    short[] stargetSampleBuffer = null;
+    byte[] encryptBuffer = null;
+
     // NSpeex
     SpeexEncoder speexEncoder;
     int recordSampleSize = 0;
@@ -45,7 +50,6 @@ public class VoissuInput : MonoBehaviour {
     void Update () {
         if (recordAudio && Microphone.IsRecording(this.microphoneDevice)) {
             int currentPosition = Microphone.GetPosition(this.microphoneDevice);
-            this.mainDevice.Log("position : " + currentPosition);
 
             // This means we wrapped around
             if (currentPosition < lastSamplePos) {
@@ -68,9 +72,12 @@ public class VoissuInput : MonoBehaviour {
     void ReadSample () {
         // Extract data
         recordAudio.clip.GetData(sampleBuffer, sampleIndex);
+        //this.mainDevice.Log("GetAveragedVolume : " + GetAveragedVolume(sampleBuffer));
 
         // Grab a new sample buffer
-        float[] targetSampleBuffer = new float[this.ouputSamplingSize];
+        if (this.targetSampleBuffer == null) {
+            this.targetSampleBuffer = new float[this.ouputSamplingSize];
+        }
 
         // Resample our real sample into the buffer
         Resample(sampleBuffer, targetSampleBuffer);
@@ -78,8 +85,17 @@ public class VoissuInput : MonoBehaviour {
         // Forward index
         sampleIndex += recordSampleSize;
 
-        short[] data = ToShortArray(targetSampleBuffer);
-        byte[] buf = new byte[recordSampleSize * 4];
+        if (this.stargetSampleBuffer == null) {
+            this.stargetSampleBuffer = new short[this.targetSampleBuffer.Length];
+        }
+
+        short[] data = ToShortArray(targetSampleBuffer, stargetSampleBuffer);
+
+        if (this.encryptBuffer == null) {
+            this.encryptBuffer = new byte[recordSampleSize * 4];
+        }
+
+        byte[] buf = this.encryptBuffer;
         int len = speexEncoder.Encode(data, 0, data.Length, buf, 0, buf.Length);
         if (len != 0) {
             this.onRecordListener(buf.Take(len).ToArray(), buf.Length);
@@ -102,10 +118,8 @@ public class VoissuInput : MonoBehaviour {
         }
     }
 
-    float GetAveragedVolume () {
-        float[] data = new float[256];
+    float GetAveragedVolume (float[] data) {
         float a = 0;
-        recordAudio.GetOutputData(data, 0);
         foreach (float s in data) {
             a += Mathf.Abs(s);
         }
@@ -179,6 +193,14 @@ public class VoissuInput : MonoBehaviour {
         return shortArray;
     }
 
+    short[] ToShortArray (float[] floatArray, short[] shortArray) {
+        for (int i = 0; i < floatArray.Length; ++i) {
+            shortArray[i] = (short)Mathf.Clamp((int)(floatArray[i] * 32767.0f), short.MinValue, short.MaxValue);
+        }
+
+        return shortArray;
+    }
+
     float[] ToFloatArray (short[] shortArray) {
         int len = shortArray.Length;
         float[] floatArray = new float[len];
@@ -201,7 +223,7 @@ public class VoissuInput : MonoBehaviour {
         if (Microphone.devices.Length == 0) {
             this.microphoneDevice = null;
         } else {
-            this.microphoneDevice = Microphone.devices[0];
+            this.microphoneDevice = null; // Microphone.devices[0];
         }
 
         ShowMicrophoneList();

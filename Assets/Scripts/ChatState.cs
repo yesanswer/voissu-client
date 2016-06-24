@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System;
 using System.Collections;
 
 public class ChatState : State {
@@ -65,13 +66,14 @@ public class ChatState : State {
     }
 
     void OnRecordListener (byte[] encryptStream, int samplingBufferSize) {
-        float packetLossRate = 0.01f;
-        if (packetLossRate > Random.Range(0.0f, 1.0f)) {
+        float packetLossRate = 0.0f;
+        if (packetLossRate > UnityEngine.Random.Range(0.0f, 1.0f)) {
             return;
         }
 
         Packet packet = new Packet();
-        packet.encryptStream = encryptStream;
+        packet.encryptStream = new byte[encryptStream.Length];
+        Array.Copy(encryptStream, packet.encryptStream, encryptStream.Length);
         packet.samplingBufferSize = samplingBufferSize;
         packet.packetNumber = currentPacketNumber;
         packetQueue.Enqueue(packet);
@@ -80,7 +82,7 @@ public class ChatState : State {
 
     IEnumerator SamplingProcessor() {
         while (true) {
-            yield return new WaitForSeconds(Random.Range(0.02f, 0.1f));
+            //yield return new WaitForSeconds(Random.Range(0.02f, 0.03f));
             if (packetQueue.Count == 0) {
                 yield return null;
                 continue;
