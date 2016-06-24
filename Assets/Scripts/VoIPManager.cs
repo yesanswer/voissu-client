@@ -171,7 +171,7 @@ public class VoIPManager : MonoBehaviour
 
 		status = VOIP_STATUS.ENTERRING1;
 		for (int i = 0; i < 3; i++) {
-			dp = new DataPacket (this.my_guid, 0, 0, new byte[0]);
+			dp = new DataPacket (this.my_guid, 0, 0, 0,new byte[0]);
 			data_channel.send_message (GLOBAL.SERVER_IP, GLOBAL.SERVER_DATA_PORT, dp);
 			yield return new WaitForSeconds (0.5f);
 			if (status == VOIP_STATUS.ENTERRING2)
@@ -216,25 +216,40 @@ public class VoIPManager : MonoBehaviour
 		control_channel.send_message (obj);
 		Debug.Log ("p2p connection result send");
 		status = VOIP_STATUS.ENTERED;
+	
+		vi = gameObject.AddComponent<VoissuInput> ();
+		vo = gameObject.AddComponent<VoissuOutput> ();
+		vi.AddOnRecordListener (OnRecordListener);
+		foreach (Peer p in peer_list) {
+			vo.AddAudioItem (p.uid, 1);
+		}
 		callback (true);
+		vi.RecordStart (VoissuOutput.samplingRate, VoissuOutput.samplingSize);
+
 	}
 
-	/*
+	
 
 	private void OnRecordListener(byte[] data, int sampling_buffer_size)
 	{
-		byte[] buf = new byte[data.Length + 4];
-		Buffer.BlockCopy (BitConverter.GetBytes (sampling_buffer_size), 0, data, 0, 4);
-		Buffer.BlockCopy (data, 0, buf, 4, data.Length);
-		vo.AddSamplingData ("aaaaa", data, sampling_buffer_size);
-		DataPacket dp = new DataPacket (my_uid, PROTOCOL.UDP_DATA, nextseq++, buf);
+		DataPacket dp = new DataPacket (my_uid, PROTOCOL.UDP_DATA, nextseq++, sampling_buffer_size, data);
+
+		bool relay_flag = false; 
 		foreach (Peer p in peer_list) {
-			p.send_data (dp, data_channel);
+			string connected_ip = p.connected_ip;
+			int connected_port = p.connected_port;
+			if (connected_ip != null && connected_port != -1)
+				data_channel.send_message (connected_ip, connected_port, dp);
+			else if(p.connection_status == PEER_STATUS.RELAY_CONNECTED)
+				relay_flag = true;
 		}
-		Debug.Log ("on record listen " + data.Length + " " + sampling_buffer_size);
+		if (relay_flag) {
+			dp.id = my_guid;
+			data_channel.send_message (GLOBAL.SERVER_IP, GLOBAL.SERVER_DATA_PORT, dp);
+		}
 	}
 
-	*/
+	
 
 
 	private void execute_packet (JSONObject obj)
@@ -338,15 +353,7 @@ public class VoIPManager : MonoBehaviour
 			case PROTOCOL.UDP_DATA:
 				{
 					Debug.Log ("sound receive");
-					/*
-					byte[] buf = dp.data;
-					byte[] stream = new byte[buf.Length - 4];
-					int sambufsize;
-					Buffer.BlockCopy (buf, 4, stream, 0, buf.Length - 4);
-					sambufsize = BitConverter.ToInt32 (buf, 0);
-					vo.AddSamplingData (dp.id, stream, sambufsize);
-					*/
-
+					vo.AddSamplingData (dp.id, dp.data, dp.int_data);
 				}				
 				break;
 			default:
@@ -355,6 +362,7 @@ public class VoIPManager : MonoBehaviour
 			}
 		}
 
+		/*
 		if (status == VOIP_STATUS.ENTERED) {
 			nextseq++;
 			dp = new DataPacket (my_uid, PROTOCOL.UDP_DATA, nextseq, Encoding.UTF8.GetBytes ("hello " + nextseq));
@@ -373,6 +381,7 @@ public class VoIPManager : MonoBehaviour
 				data_channel.send_message (GLOBAL.SERVER_IP, GLOBAL.SERVER_DATA_PORT, dp);
 			}
 		}
+		*/
 
 	}
 

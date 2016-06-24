@@ -78,38 +78,28 @@ public class MainDevice : MonoBehaviour {
             return;
         }
 
-        ChangeState<ChatState>();
+      
+       BeginConnectingState();
+		VoIPManager.make_instance ("app1", id);
+		VoIPManager.instance.enter_channel_async (channel, (enter_channel_result) => {
+			Debug.Log (string.Format ("enter channel callback : {0}", enter_channel_result));
 
-        /*
-        BeginConnectingState();
-
-        VoIPManager.Instance.connect_async(this.appID, id, (connect_result) => {
-            Debug.Log(string.Format("connect async callback : {0}", connect_result));
-
-            if (connect_result) {
-                VoIPManager.Instance.enter_channel_async(channel, (enter_channel_result) => {
-                    Debug.Log(string.Format("enter channel callback : {0}", enter_channel_result));
-
-                    if (enter_channel_result) {
-                        Message(string.Format("Enter Channel : {0}", channel));
-                        EndConnectingState();
-                        ChangeState<ChatState>();
-                    } else {
-                        EndConnectingState();
-                        Message("Enter Channel Failed");
-                    }
-                });
-
-            } else {
-                EndConnectingState();
-                Message("Connect Failed");
-            }
-        });
-        */
+			if (enter_channel_result) {
+				Message (string.Format ("Enter Channel : {0}", channel));
+				EndConnectingState ();
+				ChangeState<ChatState> ();
+			} else {
+				EndConnectingState ();
+				Message ("Enter Channel Failed");
+			}
+		});
+        
     }
 
     void ExitChannel() {
-        ChangeState<InitState>();
+		VoIPManager.instance.exit_channel_async ((exit_channel_result) => {
+			ChangeState<InitState>();		
+		});
     }
 
     void BeginConnectingState () {

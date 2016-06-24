@@ -24,6 +24,7 @@ public class ChatState : State {
 
     // Use this for initialization
     void Start () {
+		/*
         this.voissuInput = this.gameObject.AddComponent<VoissuInput>();
         this.voissuOutput = this.gameObject.AddComponent<VoissuOutput>();
         this.voissuInput.AddOnRecordListener(OnRecordListener);
@@ -35,19 +36,6 @@ public class ChatState : State {
 
         this.voissuInput.RecordStart(VoissuOutput.samplingRate, VoissuOutput.samplingSize);
         StartCoroutine(SamplingProcessor());
-
-        /*
-        this.voissuInput = this.gameObject.AddComponent<VoissuInput>();
-        this.voissuOutput = this.gameObject.AddComponent<VoissuOutput>();
-
-        this.voissuInput.AddOnRecordListener(OnRecordListener);
-
-        ArrayList peer_list = VoIPManager.Instance.PeerList;
-        foreach (Peer peer in peer_list) {
-            this.voissuOutput.AddAudioItem(peer.uid, 1);
-        }
-
-        this.voissuInput.RecordStart(VoissuOutput.samplingRate, VoissuOutput.samplingSize);
         */
     }
 
@@ -56,6 +44,7 @@ public class ChatState : State {
 	
 	}
 
+	/*
     int currentPacketNumber = 0;
     int processPacketNumber = 0;
     Queue packetQueue;
@@ -100,6 +89,6 @@ public class ChatState : State {
             }
         }
     }
-
+	*/
     
 }

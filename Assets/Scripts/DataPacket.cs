@@ -55,14 +55,29 @@ public class DataPacket
 		}
 	}
 
+	public int int_data {
+		set {
+			byte[] seq_byte = BitConverter.GetBytes (value);
+			if (BitConverter.IsLittleEndian == false)
+				Array.Reverse (seq_byte);
+			Buffer.BlockCopy (seq_byte, 0, buf, 44, 4);
+		}
+		get {
+			byte[] type_byte = new byte[4];
+			Buffer.BlockCopy (buf, 44, type_byte, 0, 4);
+			if (BitConverter.IsLittleEndian == false)
+				Array.Reverse (type_byte);
+			return BitConverter.ToInt32 (type_byte, 0);
+		}
+	}
 	public byte[] data {
 		get {
-			byte[] ret = new byte[buf.Length - 44];
-			Buffer.BlockCopy (buf, 44, ret, 0, buf.Length - 44);
+			byte[] ret = new byte[buf.Length - 48];
+			Buffer.BlockCopy (buf, 48, ret, 0, buf.Length - 48);
 			return ret;
 		}
 		set {
-			Buffer.BlockCopy (value, 0, buf, 44, value.Length);
+			Buffer.BlockCopy (value, 0, buf, 48, value.Length);
 		}
 	}
 
@@ -72,12 +87,13 @@ public class DataPacket
 		this.buf = buf;
 	}
 
-	public DataPacket (string _id, int _type, int _seq, byte[] _data)
+	public DataPacket (string _id, int _type, int _seq, int _int_data, byte[] _data)
 	{
-		buf = new byte[44 + _data.Length];
+		buf = new byte[48 + _data.Length];
 		id = _id;
 		type = _type;
 		seq = _seq;
+		int_data = _int_data;
 		data = _data;
 	}
 }
