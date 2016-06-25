@@ -98,6 +98,7 @@ public class MainDevice : MonoBehaviour {
 
     void ExitChannel() {
 		VoIPManager.instance.exit_channel_async ((exit_channel_result) => {
+			VoIPManager.delete_instance();
 			ChangeState<InitState>();		
 		});
     }

@@ -84,15 +84,26 @@ public class VoIPManager : MonoBehaviour
 
 	}
 
+	public static void delete_instance() {
+		if (instance) {
+			if (instance.control_channel != null)
+				instance.control_channel.close_channel ();
+			GameObject.Destroy (container);
+			container = null;
+			instance = null;
+
+		}
+	}
+
+
+
+
 
 	private void connect_async ()
 	{
 		if (connected == false) {	
-			peer_list = new ArrayList ();
 			status = VOIP_STATUS.CONNECTING;
-
 			control_channel = new ControlChannel (GLOBAL.SERVER_IP, GLOBAL.SERVER_CONTROL_PORT, connect_complete);
-			data_channel = new DataChannel (GLOBAL.PEER_DATA_PORT);
 		}
 	}
 
@@ -122,14 +133,20 @@ public class VoIPManager : MonoBehaviour
 		message.Add ("guid", my_guid);
 		control_channel.send_message (message);
 		data_channel.close_channel ();
-		//foreach (Peer p in peer_list)
-		//	vo.DelAudioItem (p.uid);
+		data_channel = null;
 
-		for (int i = 0; i < 20; i++) {
+		vi.RecordEnd ();
+		foreach (Peer p in peer_list)
+			vo.DelAudioItem (p.uid);
+
+		for (int i = 0; i < 10; i++) {
 			if (status != VOIP_STATUS.ENTERED)
 				break;
-			yield return new WaitForSeconds (0.5f);
+			yield return new WaitForSeconds (0.3f);
 		}
+
+		peer_list.Clear ();
+		peer_list = null;
 		callback (true);
 
 	}
@@ -142,6 +159,9 @@ public class VoIPManager : MonoBehaviour
 
 	private IEnumerator enter_channel_coroutine (string channel_id, Action<bool> callback)
 	{
+		peer_list = new ArrayList ();
+		data_channel = new DataChannel (GLOBAL.PEER_DATA_PORT);
+
 		for (int i = 0; i < 10; i++) {
 			if (connected)
 				break;
@@ -170,10 +190,10 @@ public class VoIPManager : MonoBehaviour
 		control_channel.send_message (obj);
 
 		status = VOIP_STATUS.ENTERRING1;
-		for (int i = 0; i < 3; i++) {
+		for (int i = 0; i < 5; i++) {
 			dp = new DataPacket (this.my_guid, 0, 0, 0,new byte[0]);
 			data_channel.send_message (GLOBAL.SERVER_IP, GLOBAL.SERVER_DATA_PORT, dp);
-			yield return new WaitForSeconds (0.5f);
+			yield return new WaitForSeconds (0.3f);
 			if (status == VOIP_STATUS.ENTERRING2)
 				break;
 		}
@@ -333,7 +353,7 @@ public class VoIPManager : MonoBehaviour
 			execute_packet (obj);
 		}
 		DataPacket dp = null;
-		while (true) {
+		while (data_channel != null) {
 			dp = data_channel.receive_message ();
 			if (dp == null)
 				break;
