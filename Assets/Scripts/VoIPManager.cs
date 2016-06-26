@@ -395,7 +395,8 @@ public class VoIPManager : MonoBehaviour
 				{
 					Debug.Log ("sound receive");
 					vo.AddSamplingData (dp.id, dp.data, dp.int_data);
-					receive_data_callback (dp.id);
+					if(receive_data_callback != null)
+						receive_data_callback (dp.id);
 				}				
 				break;
 			default:
