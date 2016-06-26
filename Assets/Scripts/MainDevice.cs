@@ -117,7 +117,7 @@ public class MainDevice : MonoBehaviour {
 			VoIPManager.delete_instance();
 
             foreach (Transform child in this.layoutUser.transform) {
-                Destroy(child);
+                Destroy(child.gameObject);
             }
 
             ChangeState<InitState>();		
@@ -191,15 +191,15 @@ public class MainDevice : MonoBehaviour {
         textUser.name = "user-" + uid;
         textUser.text = uid;
         textUser.transform.SetParent(this.layoutUser.transform);
+        textUser.transform.localScale = new Vector3(1.0f, 1.0f, 1.0f);
 
         Debug.Log("Enter " + uid);
     }
 
     public void ExitUser (string uid) {
-        Text textUser = this.layoutUser.transform.Find("user-" + uid).GetComponent<Text>();
-        if (textUser) {
-            Destroy(textUser);
-        }
+        Transform child = this.layoutUser.transform.Find("user-" + uid);
+        child.parent = null;
+        Destroy(child.gameObject);
 
         Debug.Log("Exit " + uid);
     }
