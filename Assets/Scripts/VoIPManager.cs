@@ -30,6 +30,23 @@ public class VoIPManager : MonoBehaviour
 	private ArrayList peer_list;
 	private VOIP_STATUS status;
 
+	public Action<string> enter_user_callback {
+		get;
+		set;
+	}
+
+	public Action<string> exit_user_callback {
+		get;
+		set;
+	}
+
+	public Action<string> receive_data_callback {
+		get;
+		set;
+	}
+
+
+
 	public static VoIPManager instance {
 		get;
 		private set;
@@ -314,7 +331,8 @@ public class VoIPManager : MonoBehaviour
 				peer_list.Add (peer);
 				vo.AddAudioItem (peer.uid, 1);
 				StartCoroutine (peer.p2p_connect (data_channel));
-
+				if (enter_user_callback != null)
+					enter_user_callback (uid);
 			}
 			break;
 		case PROTOCOL.REQUEST_TYPE_PING:
@@ -337,6 +355,8 @@ public class VoIPManager : MonoBehaviour
 				if (exit_user != null)
 					peer_list.Remove (exit_user);
 				vo.DelAudioItem (uid);
+				if (exit_user_callback != null)
+					exit_user_callback (uid);
 			}
 			break;
 		default:
@@ -375,6 +395,7 @@ public class VoIPManager : MonoBehaviour
 				{
 					Debug.Log ("sound receive");
 					vo.AddSamplingData (dp.id, dp.data, dp.int_data);
+					receive_data_callback (dp.id);
 				}				
 				break;
 			default:
