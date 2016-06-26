@@ -1130,7 +1130,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 2128837542}
   m_HandleRect: {fileID: 2128837541}
   m_Direction: 2
-  m_Value: 0
+  m_Value: 1
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -1379,7 +1379,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.41568628, g: 0.41568628, b: 0.41568628, a: 1}
+  m_Color: {r: 0.7254902, g: 0.7254902, b: 0.7254902, a: 1}
   m_RaycastTarget: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
@@ -1397,7 +1397,7 @@ MonoBehaviour:
     m_AlignByGeometry: 0
     m_RichText: 1
     m_HorizontalOverflow: 0
-    m_VerticalOverflow: 0
+    m_VerticalOverflow: 1
     m_LineSpacing: 1
   m_Text: 
 --- !u!222 &718855035
@@ -2381,7 +2381,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1896755963}
   m_HandleRect: {fileID: 1896755962}
   m_Direction: 0
-  m_Value: 1
+  m_Value: 0
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -2736,7 +2736,7 @@ RectTransform:
   m_RootOrder: 0
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 78.29999, y: 0}
+  m_AnchoredPosition: {x: 78.29999, y: -0.00012207031}
   m_SizeDelta: {x: 700, y: 0}
   m_Pivot: {x: 0.1, y: 1}
 --- !u!114 &1927071264

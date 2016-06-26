@@ -195,7 +195,9 @@ public class MainDevice : MonoBehaviour {
 
     public void ExitUser (string uid) {
         Text textUser = this.layoutUser.transform.Find("user-" + uid).GetComponent<Text>();
-        Destroy(textUser);
+        if (textUser) {
+            Destroy(textUser);
+        }
     }
 
     public void ChangeState<T> () where T : State {
