@@ -66,7 +66,9 @@ public class MainDevice : MonoBehaviour {
     }
     
 	void Update() {
-		if (Input.GetKey (KeyCode.Backspace)) {
+		if(Input.GetKeyDown(KeyCode.Escape))
+		{
+			Debug.Log ("backspace");
 			Application.Quit ();
 		}
 	}
