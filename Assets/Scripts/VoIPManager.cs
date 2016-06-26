@@ -259,7 +259,11 @@ public class VoIPManager : MonoBehaviour
 		vi.AddOnRecordListener (OnRecordListener);
 		foreach (Peer p in peer_list) {
 			vo.AddAudioItem (p.uid, 1);
-		}
+
+            if (enter_user_callback != null)
+                enter_user_callback(p.uid);
+
+        }
 		callback (true);
 		vi.RecordStart (VoissuOutput.samplingRate, VoissuOutput.samplingSize);
 
