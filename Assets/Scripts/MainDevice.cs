@@ -191,6 +191,8 @@ public class MainDevice : MonoBehaviour {
         textUser.name = "user-" + uid;
         textUser.text = uid;
         textUser.transform.SetParent(this.layoutUser.transform);
+
+        Debug.Log("Enter " + uid);
     }
 
     public void ExitUser (string uid) {
@@ -198,6 +200,8 @@ public class MainDevice : MonoBehaviour {
         if (textUser) {
             Destroy(textUser);
         }
+
+        Debug.Log("Exit " + uid);
     }
 
     public void ChangeState<T> () where T : State {
