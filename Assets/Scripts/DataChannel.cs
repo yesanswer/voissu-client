@@ -17,6 +17,7 @@ public class DataChannel
 	{
 		message_queue = new Queue ();
 		channel = new UdpClient ();
+		channel.Client.SetSocketOption (SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
 		channel.Client.Bind (new IPEndPoint (IPAddress.Parse ("0.0.0.0"), local_port));
 		channel.BeginReceive (receive_complete, null);
 		ready = true;
