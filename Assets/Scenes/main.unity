@@ -1131,7 +1131,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 2128837541}
   m_Direction: 2
   m_Value: 0
-  m_Size: 0.99999994
+  m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -1913,7 +1913,6 @@ GameObject:
   m_Component:
   - 4: {fileID: 1176948374}
   - 114: {fileID: 1176948373}
-  - 114: {fileID: 1176948375}
   m_Layer: 0
   m_Name: Main Device
   m_TagString: Untagged
@@ -1947,17 +1946,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 2
---- !u!114 &1176948375
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 1176948372}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 31826120b2ddf4c58bd6fdeb69ac1481, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &1214853941
 GameObject:
   m_ObjectHideFlags: 0
