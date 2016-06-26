@@ -10,6 +10,7 @@ public class MainDevice : MonoBehaviour {
     public GameObject panelInit;
     public GameObject panelChat;
     public GameObject panelDebug;
+    public Text UserTemplate;
     //public Mic microphone;
 
     Button btnEnter;
@@ -18,6 +19,7 @@ public class MainDevice : MonoBehaviour {
     InputField inputID;
     InputField inputChannel;
     Button btnExit;
+    VerticalLayoutGroup layoutUser;
 
     ScrollRect scrollRectLog;
     Text textLog;
@@ -48,6 +50,8 @@ public class MainDevice : MonoBehaviour {
         if (panelChat) {
             this.btnExit = panelChat.transform.FindChild("Exit Button").GetComponent<Button>();
             this.btnExit.onClick.AddListener(ExitChannel);
+
+            this.layoutUser = panelChat.transform.Find("User Container").GetComponent<VerticalLayoutGroup>();
         }
 
         if (panelDebug) {
@@ -72,6 +76,7 @@ public class MainDevice : MonoBehaviour {
 			Application.Quit ();
 		}
 	}
+
     void EnterChannel() {
         string id = this.inputID.text;
         string channel = this.inputChannel.text;
@@ -87,9 +92,12 @@ public class MainDevice : MonoBehaviour {
         }
 
       
-       BeginConnectingState();
+        BeginConnectingState();
 		VoIPManager.make_instance ("app1", id);
-		VoIPManager.instance.enter_channel_async (channel, (enter_channel_result) => {
+        VoIPManager.instance.enter_user_callback = EnterUser;
+        VoIPManager.instance.exit_user_callback = ExitUser;
+
+        VoIPManager.instance.enter_channel_async (channel, (enter_channel_result) => {
 			Debug.Log (string.Format ("enter channel callback : {0}", enter_channel_result));
 
 			if (enter_channel_result) {
@@ -107,7 +115,12 @@ public class MainDevice : MonoBehaviour {
     void ExitChannel() {
 		VoIPManager.instance.exit_channel_async ((exit_channel_result) => {
 			VoIPManager.delete_instance();
-			ChangeState<InitState>();		
+
+            foreach (Transform child in this.layoutUser.transform) {
+                Destroy(child);
+            }
+
+            ChangeState<InitState>();		
 		});
     }
 
@@ -170,6 +183,19 @@ public class MainDevice : MonoBehaviour {
         this.textMessage.color = color;
         this.textMessage.text = text;
         this.coroutineMessage = StartCoroutine(CoroutineMessage());
+    }
+
+    public void EnterUser(string uid) {
+        Text textUser = Instantiate<Text>(this.UserTemplate);
+        textUser.gameObject.SetActive(true);
+        textUser.name = "user-" + uid;
+        textUser.text = uid;
+        textUser.transform.SetParent(this.layoutUser.transform);
+    }
+
+    public void ExitUser (string uid) {
+        Text textUser = this.layoutUser.transform.Find("user-" + uid).GetComponent<Text>();
+        Destroy(textUser);
     }
 
     public void ChangeState<T> () where T : State {
