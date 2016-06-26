@@ -60,6 +60,7 @@ public class MainDevice : MonoBehaviour {
         }
 
         this.textMessage = GameObject.Find("Message").GetComponent<Text>();
+        Screen.sleepTimeout = SleepTimeout.NeverSleep;
 
         ChangeState<InitState>();
     }
