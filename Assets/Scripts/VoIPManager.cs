@@ -300,7 +300,7 @@ public class VoIPManager : MonoBehaviour
 
 	private void execute_packet (JSONObject obj)
 	{
-		Debug.Log ("execute_packet " + obj);
+		//Debug.Log ("execute_packet " + obj);
 		int type = (int)obj.GetNumber ("type");
 		switch (type) {
 		case PROTOCOL.RESPONSE_TYPE_SIGN_IN:
@@ -406,7 +406,8 @@ public class VoIPManager : MonoBehaviour
 			case PROTOCOL.UDP_DATA:
 				{
 		//			Debug.Log ("sound receive");
-					vo.AddSamplingData (dp.id, dp.data, dp.int_data);
+					if(vo != null)
+						vo.AddSamplingData (dp.id, dp.data, dp.int_data);
 					if(receive_data_callback != null)
 						receive_data_callback (dp.id);
 				}				
