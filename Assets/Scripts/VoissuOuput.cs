@@ -11,6 +11,7 @@ public class VoissuOutput : MonoBehaviour {
     // public const int samplingSize = 640;
     public const int samplingCount = 10;
     public const int minPlaySamplingCount = 5;
+    public const int maxPlaySamplingCount = 10;
 
     MainDevice mainDevice;
 
@@ -78,6 +79,23 @@ public class VoissuOutput : MonoBehaviour {
                 if (!this.playAudio.isPlaying) {
                     if (this.remainedSamples >= (VoissuOutput.samplingSize * VoissuOutput.minPlaySamplingCount)) {
                         this.playAudio.Play();
+                    }
+                }
+            }
+
+            // delay remove
+            if (this.playAudio.isPlaying) {
+                if (this.remainedSamples / VoissuOutput.samplingSize > minPlaySamplingCount) {
+                    while (this.remainedSamples / VoissuOutput.samplingSize >= minPlaySamplingCount) {
+                        int timeSamples = this.playAudio.timeSamples;
+                        timeSamples += VoissuOutput.samplingSize;
+                        this.playAudio.timeSamples = timeSamples % this.playAudio.clip.samples;
+                        this.prevTimeSamples = this.playAudio.timeSamples;
+
+                        this.remainedSamples -= VoissuOutput.samplingSize;
+                        if (this.remainedSamples < 0) {
+                            this.remainedSamples = 0;
+                        }
                     }
                 }
             }
