@@ -41,6 +41,8 @@ public class DataChannel
 		byte[] buf = channel.EndReceive (ar, ref addr);
 		DataPacket dp = new DataPacket (buf);
 		message_queue.Enqueue (dp);
+		if(dp.type != PROTOCOL.UDP_DATA)
+			Debug.Log ("udp data receive: " + dp.id + " " + dp.type + " " + addr);
 		channel.BeginReceive (receive_complete, null);
 	}
 

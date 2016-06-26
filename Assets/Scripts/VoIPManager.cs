@@ -241,17 +241,7 @@ public class VoIPManager : MonoBehaviour
 			}
 			yield return new WaitForSeconds (0.5f);
 		}
-
-		obj = new JSONObject ();
-		JSONArray success_list = new JSONArray ();
-		foreach (Peer p in peer_list) {
-			if (p.connection_status != PEER_STATUS.RELAY_CONNECTED)
-				success_list.Add (new JSONValue(p.uid));
-		}
-		obj.Add ("type", PROTOCOL.REQUEST_TYPE_P2P_STATUS_SYNC);
-		obj.Add ("users", success_list);
-		control_channel.send_message (obj);
-		Debug.Log ("p2p connection result send");
+		p2p_status_sync ();
 		status = VOIP_STATUS.ENTERED;
 	
 		vi = gameObject.AddComponent<VoissuInput> ();
@@ -266,6 +256,21 @@ public class VoIPManager : MonoBehaviour
         }
 		callback (true);
 		vi.RecordStart (VoissuOutput.samplingRate, VoissuOutput.samplingSize);
+
+	}
+	private void p2p_status_sync()
+	{
+		JSONObject obj = new JSONObject ();
+		JSONArray success_list = new JSONArray ();
+		foreach (Peer p in peer_list) {
+			if (p.connection_status != PEER_STATUS.RELAY_CONNECTED)
+				success_list.Add (new JSONValue(p.uid));
+		}
+		obj.Add ("type", PROTOCOL.REQUEST_TYPE_P2P_STATUS_SYNC);
+		obj.Add ("guid", my_guid);
+		obj.Add ("users", success_list);
+		control_channel.send_message (obj);
+		Debug.Log ("p2p connection result send");
 
 	}
 
@@ -342,6 +347,7 @@ public class VoIPManager : MonoBehaviour
 		case PROTOCOL.REQUEST_TYPE_PING:
 			{
 				JSONObject response = new JSONObject ();
+				response.Add ("guid", my_guid);
 				response.Add ("type", PROTOCOL.PONG);
 				control_channel.send_message (response);
 		//		Debug.Log ("pong");
@@ -359,6 +365,8 @@ public class VoIPManager : MonoBehaviour
 				if (exit_user != null)
 					peer_list.Remove (exit_user);
 				vo.DelAudioItem (uid);
+				p2p_status_sync ();
+
 				if (exit_user_callback != null)
 					exit_user_callback (uid);
 			}
@@ -386,18 +394,18 @@ public class VoIPManager : MonoBehaviour
 			//Debug.Log ("receive udp message: ");
 			switch (dp.type) {
 			case PROTOCOL.UDP_PRIVATE_CONNECT:
-				Debug.Log ("udp_private_connect message recv");
+				Debug.Log ("udp_private_connect message recv " + dp.id);
 				p.connection_status = PEER_STATUS.PRIVATE_CONNECTED;
 
 				break;
 			case PROTOCOL.UDP_PUBLIC_CONNECT:
-				Debug.Log ("udp_public_connect message recv");
+				Debug.Log ("udp_public_connect message recv " + dp.id);
 				p.connection_status = PEER_STATUS.PUBLIC_CONNECTED;
 
 				break;
 			case PROTOCOL.UDP_DATA:
 				{
-					Debug.Log ("sound receive");
+		//			Debug.Log ("sound receive");
 					vo.AddSamplingData (dp.id, dp.data, dp.int_data);
 					if(receive_data_callback != null)
 						receive_data_callback (dp.id);
