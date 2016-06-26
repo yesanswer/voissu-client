@@ -14,7 +14,7 @@ public class FPSTracker : MonoBehaviour {
 
     IEnumerator UpdateFPS() {
         while(true) {
-            int fps = (int)(1.0f / Time.smoothDeltaTime);
+            int fps = (int)(1.0f / Time.deltaTime);
             text.text = string.Format("FPS : {0}", fps);
             yield return new WaitForSeconds(1.0f);
         }
