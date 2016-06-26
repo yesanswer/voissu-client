@@ -65,6 +65,11 @@ public class MainDevice : MonoBehaviour {
         ChangeState<InitState>();
     }
     
+	void Update() {
+		if (Input.GetKey (KeyCode.Backspace)) {
+			Application.Quit ();
+		}
+	}
     void EnterChannel() {
         string id = this.inputID.text;
         string channel = this.inputChannel.text;
