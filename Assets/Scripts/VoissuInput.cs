@@ -39,7 +39,6 @@ public class VoissuInput : MonoBehaviour {
 
     void Awake () {
         this.mainDevice = GameObject.Find("Main Device").GetComponent<MainDevice>();
-        this.recordAudio = this.gameObject.AddComponent<AudioSource>();
         this.lastSamplePos = 0;
     }
 
@@ -172,6 +171,7 @@ public class VoissuInput : MonoBehaviour {
             RecordEnd();
         }
 
+        this.recordAudio = this.gameObject.AddComponent<AudioSource>();
         this.ouputSamplingSize = ouputSamplingSize;
         this.ouputSamplingRate = ouputSamplingRate;
 
@@ -200,10 +200,23 @@ public class VoissuInput : MonoBehaviour {
     }
 
     public void RecordEnd () {
+        if (this.recordAudio && this.recordAudio.isPlaying) {
+            this.recordAudio.Stop();
+            Destroy(this.recordAudio);
+            this.recordAudio = null;
+        }
+
         if (Microphone.IsRecording(this.microphoneDevice)) {
-            this.mainDevice.Log("---RecordEnd---");
             Microphone.End(this.microphoneDevice);
         }
+
+        this.lastSamplePos = 0;
+        this.totalSampleSize = 0;
+        this.sampleIndex = 0;
+        this.speexEncoder = null;
+        this.sampleBuffer = null;
+
+        this.mainDevice.Log("---RecordEnd---");
     }
 
     public void AddOnRecordListener (OnRecordListener listener) {

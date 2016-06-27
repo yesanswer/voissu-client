@@ -177,7 +177,7 @@ public class VoIPManager : MonoBehaviour
     public void record_start() 
     {
         if (vi != null) {
-            vi.RecordStart(VoissuOutput.samplingCount, VoissuOutput.samplingSize);
+            vi.RecordStart(VoissuOutput.samplingRate, VoissuOutput.samplingSize);
         }
     }
 
