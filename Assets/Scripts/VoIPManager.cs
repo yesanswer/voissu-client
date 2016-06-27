@@ -301,6 +301,9 @@ public class VoIPManager : MonoBehaviour
 		}
 		if (peer.connection_status == PEER_STATUS.PRIVATE_CONNECTED) {
 			Debug.Log ("private connect success");
+			if(sync)
+				p2p_status_sync ();
+			
 			yield break;	
 		}
 
@@ -316,6 +319,9 @@ public class VoIPManager : MonoBehaviour
 		}
 		if (peer.connection_status == PEER_STATUS.PUBLIC_CONNECTED) {
 			Debug.Log ("public connect success");
+			if(sync)
+				p2p_status_sync ();
+			
 			yield break;	
 		}
 
