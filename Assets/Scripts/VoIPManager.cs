@@ -289,8 +289,8 @@ public class VoIPManager : MonoBehaviour
 	}
 	private IEnumerator p2p_connect(Peer peer, bool sync)
 	{
-		DataPacket dp = new DataPacket (VoIPManager.instance.my_uid, PROTOCOL.UDP_PRIVATE_CONNECT, 1, 0, Encoding.UTF8.GetBytes("Hello world!!"));
-		Debug.Log ("peer.p2p_connect call " + VoIPManager.instance.my_uid);
+		DataPacket dp = new DataPacket (my_uid, PROTOCOL.UDP_PRIVATE_CONNECT, 1, 0, Encoding.UTF8.GetBytes("Hello world!!"));
+		Debug.Log ("peer.p2p_connect call " + my_uid);
 
 		peer.connection_status = PEER_STATUS.PRIVATE_CONNECTING;
 		for (int i = 0; i < 5; i++) 
@@ -308,7 +308,7 @@ public class VoIPManager : MonoBehaviour
 		}
 
 		Debug.Log ("private connect fail");
-		dp = new DataPacket (VoIPManager.instance.my_uid, PROTOCOL.UDP_PUBLIC_CONNECT, 1, 0, Encoding.UTF8.GetBytes("Hello world!!"));
+		dp = new DataPacket (my_uid, PROTOCOL.UDP_PUBLIC_CONNECT, 1, 0, Encoding.UTF8.GetBytes("Hello world!!"));
 
 		peer.connection_status = PEER_STATUS.PUBLIC_CONNECTING;
 		for (int i = 0; i < 5; i++) 
@@ -347,7 +347,7 @@ public class VoIPManager : MonoBehaviour
 				relay_flag = true;
 		}
 		if (relay_flag) {
-			dp.id = my_guid;
+			dp = new DataPacket(my_guid, PROTOCOL.UDP_DATA, nextseq, sampling_buffer_size, data);
 			Debug.Log ("relay send");
 			data_channel.send_message (GLOBAL.SERVER_IP, GLOBAL.SERVER_DATA_PORT, dp);
 		}
