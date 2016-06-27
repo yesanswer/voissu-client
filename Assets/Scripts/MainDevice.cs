@@ -19,6 +19,7 @@ public class MainDevice : MonoBehaviour {
     InputField inputID;
     InputField inputChannel;
     Button btnExit;
+    Button btnMic;
     VerticalLayoutGroup layoutUser;
 
     ScrollRect scrollRectLog;
@@ -31,6 +32,7 @@ public class MainDevice : MonoBehaviour {
     int logLineCount = 0;
     float connectingTimeForSeconds = 0.0f;
     bool isRequestConnecting = false;
+    bool isRecording = true;
 
     // Use this for initialization
     void Start () {
@@ -50,6 +52,9 @@ public class MainDevice : MonoBehaviour {
         if (panelChat) {
             this.btnExit = panelChat.transform.FindChild("Exit Button").GetComponent<Button>();
             this.btnExit.onClick.AddListener(ExitChannel);
+
+            this.btnMic = panelChat.transform.FindChild("Mic Button").GetComponent<Button>();
+            this.btnMic.onClick.AddListener(MicButton);
 
             this.layoutUser = panelChat.transform.Find("User Container").GetComponent<VerticalLayoutGroup>();
         }
@@ -91,25 +96,27 @@ public class MainDevice : MonoBehaviour {
             return;
         }
 
-      
+        Text btnText = this.btnMic.GetComponentInChildren<Text>();
+        btnText.text = "Mic Off";
+        this.isRecording = true;
+
         BeginConnectingState();
-		VoIPManager.make_instance ("app1", id);
+        VoIPManager.make_instance ("app1", id);
         VoIPManager.instance.enter_user_callback = EnterUser;
         VoIPManager.instance.exit_user_callback = ExitUser;
 
         VoIPManager.instance.enter_channel_async (channel, (enter_channel_result) => {
-			Debug.Log (string.Format ("enter channel callback : {0}", enter_channel_result));
+            Debug.Log (string.Format ("enter channel callback : {0}", enter_channel_result));
 
-			if (enter_channel_result) {
-				Message (string.Format ("Enter Channel : {0}", channel));
-				EndConnectingState ();
-				ChangeState<ChatState> ();
-			} else {
-				EndConnectingState ();
-				Message ("Enter Channel Failed");
-			}
-		});
-        
+            if (enter_channel_result) {
+                Message (string.Format ("Enter Channel : {0}", channel));
+                EndConnectingState ();
+                ChangeState<ChatState> ();
+            } else {
+                EndConnectingState ();
+                Message ("Enter Channel Failed");
+            }
+        });
     }
 
     void ExitChannel() {
@@ -202,6 +209,32 @@ public class MainDevice : MonoBehaviour {
         Destroy(child.gameObject);
 
         Debug.Log("Exit " + uid);
+    }
+
+    public void MicButton() {
+        if (isRecording) {
+            RecordEnd();
+        } else {
+            RecordStart();
+        }
+    }
+
+    public void RecordStart() {
+        if (this.currentState is ChatState) {
+            Text btnText = this.btnMic.GetComponentInChildren<Text>();
+            btnText.text = "Mic Off";
+            isRecording = true;
+            VoIPManager.instance.record_start();
+        }
+    }
+
+    public void RecordEnd () {
+        if (this.currentState is ChatState) {
+            Text btnText = this.btnMic.GetComponentInChildren<Text>();
+            btnText.text = "Mic On";
+            isRecording = false;
+            VoIPManager.instance.record_end();
+        }
     }
 
     public void ChangeState<T> () where T : State {

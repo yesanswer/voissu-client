@@ -174,7 +174,21 @@ public class VoIPManager : MonoBehaviour
 		StartCoroutine (enter_channel_coroutine (channel_id, callback));
 	}
 
-	private IEnumerator enter_channel_coroutine (string channel_id, Action<bool> callback)
+    public void record_start() 
+    {
+        if (vi != null) {
+            vi.RecordStart(VoissuOutput.samplingCount, VoissuOutput.samplingSize);
+        }
+    }
+
+    public void record_end () 
+    {
+        if (vi != null) {
+            vi.RecordEnd();
+        }
+    }
+
+    private IEnumerator enter_channel_coroutine (string channel_id, Action<bool> callback)
 	{
 		peer_list = new ArrayList ();
 		data_channel = new DataChannel (GLOBAL.PEER_DATA_PORT);

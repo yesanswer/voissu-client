@@ -168,6 +168,10 @@ public class VoissuInput : MonoBehaviour {
     }
     
     public void RecordStart (int ouputSamplingRate, int ouputSamplingSize) {
+        if (Microphone.IsRecording(this.microphoneDevice)) {
+            RecordEnd();
+        }
+
         this.ouputSamplingSize = ouputSamplingSize;
         this.ouputSamplingRate = ouputSamplingRate;
 
