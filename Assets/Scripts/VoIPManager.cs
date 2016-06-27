@@ -237,7 +237,7 @@ public class VoIPManager : MonoBehaviour
 
 		foreach (Peer peer in peer_list) {
 			Debug.Log ("<peer> private ip: " + peer.private_ip + " public ip: " + peer.public_ip + " public port: " + peer.public_port);
-			StartCoroutine (peer.p2p_connect (data_channel));
+			StartCoroutine (p2p_connect (peer));
 		}
 			
 
@@ -286,6 +286,42 @@ public class VoIPManager : MonoBehaviour
 		control_channel.send_message (obj);
 		Debug.Log ("p2p connection result send");
 
+	}
+	private IEnumerator p2p_connect(Peer peer)
+	{
+		DataPacket dp = new DataPacket (VoIPManager.instance.my_uid, PROTOCOL.UDP_PRIVATE_CONNECT, 1, 0, Encoding.UTF8.GetBytes("Hello world!!"));
+		Debug.Log ("peer.p2p_connect call " + VoIPManager.instance.my_uid);
+
+		peer.connection_status = PEER_STATUS.PRIVATE_CONNECTING;
+		for (int i = 0; i < 5; i++) 
+		{
+			//	Debug.Log ("private udp send " + private_ip + " " + private_port);
+			data_channel.send_message (peer.private_ip, peer.private_port, dp);
+			yield return new WaitForSeconds (0.3f);
+		}
+		if (peer.connection_status == PEER_STATUS.PRIVATE_CONNECTED) {
+			Debug.Log ("private connect success");
+			yield break;	
+		}
+
+		Debug.Log ("private connect fail");
+		dp = new DataPacket (VoIPManager.instance.my_uid, PROTOCOL.UDP_PUBLIC_CONNECT, 1, 0, Encoding.UTF8.GetBytes("Hello world!!"));
+
+		peer.connection_status = PEER_STATUS.PUBLIC_CONNECTING;
+		for (int i = 0; i < 5; i++) 
+		{
+			//	Debug.Log ("public udp send");
+			data_channel.send_message (peer.public_ip, peer.public_port, dp);
+			yield return new WaitForSeconds (0.3f);
+		}
+		if (peer.connection_status == PEER_STATUS.PUBLIC_CONNECTED) {
+			Debug.Log ("public connect success");
+			yield break;	
+		}
+
+		Debug.Log ("public connect fail");
+		peer.connection_status = PEER_STATUS.RELAY_CONNECTED;
+		p2p_status_sync ();
 	}
 
 	
@@ -353,7 +389,7 @@ public class VoIPManager : MonoBehaviour
 				Peer peer = new Peer (uid, public_ip, public_port, private_ip, GLOBAL.PEER_DATA_PORT);
 				peer_list.Add (peer);
 				vo.AddAudioItem (peer.uid, 1);
-				StartCoroutine (peer.p2p_connect (data_channel));
+				StartCoroutine (p2p_connect (peer));
 				if (enter_user_callback != null)
 					enter_user_callback (uid);
 			}

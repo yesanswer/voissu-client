@@ -65,41 +65,5 @@ public class Peer
 		connection_status = PEER_STATUS.UNDEFINED;
 	}
 
-	public IEnumerator p2p_connect(DataChannel data_channel)
-	{
-		DataPacket dp = new DataPacket (VoIPManager.instance.my_uid, PROTOCOL.UDP_PRIVATE_CONNECT, 1, 0, Encoding.UTF8.GetBytes("Hello world!!"));
-		Debug.Log ("peer.p2p_connect call " + VoIPManager.instance.my_uid);
-
-		connection_status = PEER_STATUS.PRIVATE_CONNECTING;
-		for (int i = 0; i < 5; i++) 
-		{
-		//	Debug.Log ("private udp send " + private_ip + " " + private_port);
-			data_channel.send_message (private_ip, private_port, dp);
-			yield return new WaitForSeconds (0.3f);
-		}
-		if (connection_status == PEER_STATUS.PRIVATE_CONNECTED) {
-			Debug.Log ("private connect success");
-			yield break;	
-		}
-
-		Debug.Log ("private connect fail");
-		dp = new DataPacket (VoIPManager.instance.my_uid, PROTOCOL.UDP_PUBLIC_CONNECT, 1, 0, Encoding.UTF8.GetBytes("Hello world!!"));
-
-		connection_status = PEER_STATUS.PUBLIC_CONNECTING;
-		for (int i = 0; i < 5; i++) 
-		{
-		//	Debug.Log ("public udp send");
-			data_channel.send_message (public_ip, public_port, dp);
-			yield return new WaitForSeconds (0.3f);
-		}
-		if (connection_status == PEER_STATUS.PUBLIC_CONNECTED) {
-			Debug.Log ("public connect success");
-			yield break;	
-		}
-
-		Debug.Log ("public connect fail");
-		connection_status = PEER_STATUS.RELAY_CONNECTED;
-			
-	}
 
 }
