@@ -237,7 +237,7 @@ public class VoIPManager : MonoBehaviour
 
 		foreach (Peer peer in peer_list) {
 			Debug.Log ("<peer> private ip: " + peer.private_ip + " public ip: " + peer.public_ip + " public port: " + peer.public_port);
-			StartCoroutine (p2p_connect (peer));
+			StartCoroutine (p2p_connect (peer, false));
 		}
 			
 
@@ -287,7 +287,7 @@ public class VoIPManager : MonoBehaviour
 		Debug.Log ("p2p connection result send");
 
 	}
-	private IEnumerator p2p_connect(Peer peer)
+	private IEnumerator p2p_connect(Peer peer, bool sync)
 	{
 		DataPacket dp = new DataPacket (VoIPManager.instance.my_uid, PROTOCOL.UDP_PRIVATE_CONNECT, 1, 0, Encoding.UTF8.GetBytes("Hello world!!"));
 		Debug.Log ("peer.p2p_connect call " + VoIPManager.instance.my_uid);
@@ -321,7 +321,8 @@ public class VoIPManager : MonoBehaviour
 
 		Debug.Log ("public connect fail");
 		peer.connection_status = PEER_STATUS.RELAY_CONNECTED;
-		p2p_status_sync ();
+		if(sync)
+			p2p_status_sync ();
 	}
 
 	
@@ -341,6 +342,7 @@ public class VoIPManager : MonoBehaviour
 		}
 		if (relay_flag) {
 			dp.id = my_guid;
+			Debug.Log ("relay send");
 			data_channel.send_message (GLOBAL.SERVER_IP, GLOBAL.SERVER_DATA_PORT, dp);
 		}
 	}
@@ -389,7 +391,7 @@ public class VoIPManager : MonoBehaviour
 				Peer peer = new Peer (uid, public_ip, public_port, private_ip, GLOBAL.PEER_DATA_PORT);
 				peer_list.Add (peer);
 				vo.AddAudioItem (peer.uid, 1);
-				StartCoroutine (p2p_connect (peer));
+				StartCoroutine (p2p_connect (peer, true));
 				if (enter_user_callback != null)
 					enter_user_callback (uid);
 			}
